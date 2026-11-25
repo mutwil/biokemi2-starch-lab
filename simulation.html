@@ -30,7 +30,7 @@
       .toggle { display:flex; gap:10px; align-items:center; color:var(--muted); font-size:.82rem; cursor:pointer; }
       .toggle input { accent-color:var(--cyan); width:17px; height:17px; }
       .stage-wrap { min-height:600px; position:relative; overflow:hidden; }
-      canvas { width:100%; height:100%; min-height:600px; display:block; }
+      canvas { touch-action:none; width:100%; height:100%; min-height:600px; display:block; }
       .stage-label { position:absolute; top:19px; left:20px; display:flex; gap:8px; align-items:center; color:#c6e5e8; font-size:.78rem; letter-spacing:.07em; text-transform:uppercase; pointer-events:none; }
       .stage-label span { display:inline-block; height:8px; width:8px; border-radius:50%; background:var(--sun); box-shadow:0 0 10px var(--sun); }
       .legend { position:absolute; bottom:17px; left:18px; right:18px; display:flex; flex-wrap:wrap; gap:8px; pointer-events:none; }
@@ -84,7 +84,7 @@
           <div class="control"><div class="control-top"><label for="speed">Simulation speed</label><output id="speedVal">1.0×</output></div><input id="speed" type="range" min="0.25" max="4" step="0.25" value="1" style="--accent:#75c8ff;--fill:20%"><p class="hint">Speeds up enzyme movement, network motion, and reactions.</p></div>
           <div class="transport"><label class="toggle"><input id="trails" type="checkbox" checked> Show enzyme trajectories</label></div>
         </aside>
-        <section class="panel stage-wrap" aria-label="Animated starch degradation model"><canvas id="sim"></canvas><div class="stage-label"><span></span> molecular collision field</div><div class="legend"><span class="chip"><i style="background:#47dfd2"></i>α-amylase · internal α(1→4)</span><span class="chip"><i style="background:#ad8bff"></i>β-amylase · terminal α(1→4)</span><span class="chip"><i style="background:#ffcb6b"></i>α(1→4) backbone</span><span class="chip"><i style="background:#ff8787"></i>α(1→6) branch · ISA/PUL</span></div></section>
+        <section class="panel stage-wrap" aria-label="Animated starch degradation model"><canvas id="sim"></canvas><div class="stage-label"><span></span> Drag a sugar to move its chain</div><div class="legend"><span class="chip"><i style="background:#47dfd2"></i>α-amylase · internal α(1→4)</span><span class="chip"><i style="background:#ad8bff"></i>β-amylase · terminal α(1→4)</span><span class="chip"><i style="background:#ffcb6b"></i>α(1→4) backbone</span><span class="chip"><i style="background:#ff8787"></i>α(1→6) branch · ISA/PUL</span></div></section>
         <aside class="panel metrics">
           <h2>Live readout</h2>
           <div class="metric"><span>Illustrated bonds intact</span><strong id="remaining">100%</strong><div class="progress"><b id="bar" style="width:100%"></b></div></div>
@@ -122,6 +122,86 @@
       function resize(){ const r=canvas.getBoundingClientRect(), d=devicePixelRatio||1; W=r.width; H=r.height; canvas.width=W*d; canvas.height=H*d; ctx.setTransform(d,0,0,d,0,0); }
       function rng(a,b){return a+Math.random()*(b-a)}
       const sugarRadius=12;
+      let drag = null;
+
+      function attachedSugars(start) {
+        const group = new Set([start]);
+        for (const sugar of group) {
+          for (const bond of bonds) {
+            if (!bond.alive) continue;
+            if (bond.parent === sugar) group.add(bond.child);
+            else if (bond.child === sugar) group.add(bond.parent);
+          }
+        }
+        return group;
+      }
+
+      function canvasPoint(event) {
+        const rect = canvas.getBoundingClientRect();
+        return {x: (event.clientX - rect.left) * W / rect.width,
+                y: (event.clientY - rect.top) * H / rect.height};
+      }
+
+      function sugarAt(point, pointerType) {
+        let nearest = null;
+        let distance = sugarRadius + (pointerType === 'touch' ? 10 : 3);
+        for (const sugar of nodes) {
+          const gap = Math.hypot(point.x - sugar.x, point.y - sugar.y);
+          if (gap <= distance) {
+            nearest = sugar;
+            distance = gap;
+          }
+        }
+        return nearest;
+      }
+
+      function finishDrag() {
+        if (!drag) return;
+        const {pointerId} = drag;
+        drag = null;
+        canvas.style.cursor = '';
+        if (canvas.hasPointerCapture(pointerId)) canvas.releasePointerCapture(pointerId);
+      }
+
+      canvas.addEventListener('pointerdown', event => {
+        if (drag || event.button !== 0) return;
+        const point = canvasPoint(event);
+        const sugar = sugarAt(point, event.pointerType);
+        if (!sugar) return;
+        drag = {pointerId: event.pointerId, sugar, group: attachedSugars(sugar),
+                offsetX: point.x - sugar.x, offsetY: point.y - sugar.y};
+        canvas.setPointerCapture(event.pointerId);
+        canvas.style.cursor = 'grabbing';
+      });
+
+      canvas.addEventListener('pointermove', event => {
+        const point = canvasPoint(event);
+        if (!drag) {
+          canvas.style.cursor = sugarAt(point, event.pointerType) ? 'grab' : '';
+          return;
+        }
+        if (event.pointerId !== drag.pointerId) return;
+        let dx = point.x - drag.offsetX - drag.sugar.x;
+        let dy = point.y - drag.offsetY - drag.sugar.y;
+        // Use one displacement for the whole fragment, including at the canvas edges.
+        for (const sugar of drag.group) {
+          dx = Math.max(sugarRadius - sugar.x, Math.min(dx, W - sugarRadius - sugar.x));
+          dy = Math.max(sugarRadius - sugar.y, Math.min(dy, H - sugarRadius - sugar.y));
+        }
+        for (const sugar of drag.group) {
+          sugar.x += dx;
+          sugar.y += dy;
+          sugar.homeX += dx;
+          sugar.homeY += dy;
+          sugar.vx = sugar.vy = 0;
+        }
+      });
+      for (const type of ['pointerup', 'pointercancel', 'lostpointercapture']) {
+        canvas.addEventListener(type, event => {
+          if (drag?.pointerId === event.pointerId) finishDrag();
+        });
+      }
+
       function makeBonds(){
         bonds=[];nodes=[];chains=[];const count=Math.max(4,Math.min(Math.round(7*+inputs.substrate.value/100),Math.floor((W-70)/36)+1)),step=Math.min(48,(W-70)/Math.max(count-1,1)),cx=W/2;
         const addNode=(x,y)=>{const n={x,y,homeX:x,homeY:y,vx:0,vy:0,released:false};nodes.push(n);return n;};
@@ -135,18 +215,19 @@
         total=bonds.length;refreshTerminals();
       }
       function refreshTerminals(){
+        if (drag) drag.group = attachedSugars(drag.sugar);
         bonds.forEach(b=>b.betaTarget=false);nodes.forEach(n=>{n.reducing=false;n.nonreducing=false;});
         nodes.filter(n=>!n.released).forEach(n=>{const outgoing=bonds.some(b=>b.alive&&b.parent===n),incoming=bonds.some(b=>b.alive&&b.child===n);n.reducing=!incoming;n.nonreducing=!outgoing;const free=!incoming&&!outgoing;if(free&&!n.free){const angle=rng(0,Math.PI*2),speed=rng(18,30);n.vx=Math.cos(angle)*speed;n.vy=Math.sin(angle)*speed;}n.free=free;});
         nodes.filter(n=>n.nonreducing&&!n.released).forEach(end=>{const outer=bonds.find(b=>b.alive&&b.type==='a14'&&b.child===end);if(!outer)return;const middle=outer.parent;if(bonds.some(b=>b.alive&&b.type==='a16'&&b.parent===middle))return;const target=bonds.find(b=>b.alive&&b.type==='a14'&&b.child===middle);if(target){target.betaTarget=true;target.maltoseOuter=outer;}});
       }
       function desired(type){return Math.round(+inputs[type].value*.7)}
       function refill(){ const all=['amylase','betaamylase','debrancher']; all.forEach(type=>{let current=enzymes.filter(e=>e.type===type); while(current.length<desired(type)){const a=rng(0,Math.PI*2), v=rng(55,90); const e={type,x:W/2+Math.cos(a)*rng(150,260),y:H/2+Math.sin(a)*rng(125,220),vx:Math.cos(a)*v,vy:Math.sin(a)*v,r:type==='amylase'?9:8,trail:[]}; enzymes.push(e); current.push(e);} if(current.length>desired(type)){let n=current.length-desired(type); enzymes=enzymes.filter(e=>!(e.type===type&&n-->0));}}); }
-      function reset(){cleaved=0;dextrins=0;glucose=0;debranched=0;particles=[];ripples=[];enzymes=[];makeBonds();refill();updateReadout();}
+      function reset(){finishDrag();cleaved=0;dextrins=0;glucose=0;debranched=0;particles=[];ripples=[];enzymes=[];makeBonds();refill();updateReadout();}
       function addProduct(x,y,isGlucose){particles.push({x,y,vx:rng(-38,38),vy:rng(-38,38),life:1,glucose:isGlucose});}
       function endpoints(b){return {x1:b.parent.x+(b.type==='a14'?sugarRadius:-sugarRadius*.5),y1:b.parent.y+(b.type==='a14'?0:-sugarRadius*1.55),x2:b.child.x-sugarRadius,y2:b.child.y};}
       function hit(e,b){const compatible=(e.type==='amylase'&&b.type==='a14'&&!b.parent.released&&!b.child.released) || (e.type==='betaamylase'&&b.betaTarget) || (e.type==='debrancher'&&b.type==='a16');if(!b.alive||!compatible)return;const p=endpoints(b),x=(p.x1+p.x2)/2,y=(p.y1+p.y2)/2,dx=e.x-x,dy=e.y-y;if(dx*dx+dy*dy>(e.r+12)**2||Math.random()>.12)return;b.alive=false;cleaved++;if(e.type==='amylase')dextrins++;else if(e.type==='betaamylase'){b.child.released=true;b.maltoseOuter.child.released=true;glucose++;}else debranched++;refreshTerminals();ripples.push({x,y,r:3,life:1,c:colors[e.type]});addProduct(x,y,e.type==='betaamylase');updateReadout();}
       function bounceFromResidues(e){nodes.forEach(n=>{const dx=e.x-n.x,dy=e.y-n.y,dist=Math.hypot(dx,dy)||.001,min=e.r+sugarRadius;if(dist>=min)return;const nx=dx/dist,ny=dy/dist,overlap=min-dist;e.x+=nx*overlap;e.y+=ny*overlap;const toward=e.vx*nx+e.vy*ny;if(toward<0){e.vx-=2*toward*nx;e.vy-=2*toward*ny;n.vx-=nx*4;n.vy-=ny*4;}});}
-      function moveNetwork(dt,t){nodes.forEach((n,i)=>{if(n.free){n.vx+=Math.sin(t*.0012+i)*4*dt;n.vy+=Math.cos(t*.001+i)*4*dt;}else{n.vx+=(n.homeX-n.x)*.65*dt+Math.sin(t*.0008+i)*.8*dt;n.vy+=(n.homeY-n.y)*.65*dt+Math.cos(t*.001+i)*.8*dt;}});bonds.filter(b=>b.alive).forEach(b=>{const dx=b.child.x-b.parent.x,dy=b.child.y-b.parent.y,d=Math.hypot(dx,dy)||1,force=(d-b.length)*2*dt,fx=dx/d*force,fy=dy/d*force;b.parent.vx+=fx;b.parent.vy+=fy;b.child.vx-=fx;b.child.vy-=fy;});nodes.forEach(n=>{n.vx*=n.free?.999:.99;n.vy*=n.free?.999:.99;n.x+=n.vx*dt;n.y+=n.vy*dt;if(n.free){const margin=sugarRadius+4;if(n.x<margin){n.x=margin;n.vx=Math.abs(n.vx);}if(n.x>W-margin){n.x=W-margin;n.vx=-Math.abs(n.vx);}if(n.y<margin){n.y=margin;n.vy=Math.abs(n.vy);}if(n.y>H-margin){n.y=H-margin;n.vy=-Math.abs(n.vy);}}});}
+      function moveNetwork(dt,t){nodes.forEach((n,i)=>{if(n.free){n.vx+=Math.sin(t*.0012+i)*4*dt;n.vy+=Math.cos(t*.001+i)*4*dt;}else{n.vx+=(n.homeX-n.x)*.65*dt+Math.sin(t*.0008+i)*.8*dt;n.vy+=(n.homeY-n.y)*.65*dt+Math.cos(t*.001+i)*.8*dt;}});bonds.filter(b=>b.alive).forEach(b=>{const dx=b.child.x-b.parent.x,dy=b.child.y-b.parent.y,d=Math.hypot(dx,dy)||1,force=(d-b.length)*2*dt,fx=dx/d*force,fy=dy/d*force;b.parent.vx+=fx;b.parent.vy+=fy;b.child.vx-=fx;b.child.vy-=fy;});nodes.forEach(n=>{if(drag?.group.has(n)){n.vx=n.vy=0;return;}n.vx*=n.free?.999:.99;n.vy*=n.free?.999:.99;n.x+=n.vx*dt;n.y+=n.vy*dt;if(n.free){const margin=sugarRadius+4;if(n.x<margin){n.x=margin;n.vx=Math.abs(n.vx);}if(n.x>W-margin){n.x=W-margin;n.vx=-Math.abs(n.vx);}if(n.y<margin){n.y=margin;n.vy=Math.abs(n.vy);}if(n.y>H-margin){n.y=H-margin;n.vy=-Math.abs(n.vy);}}});}
       function updateReadout(){ const alive=bonds.filter(b=>b.alive).length, percent=Math.max(0,Math.round(alive/Math.max(1,total)*100)); $('#remaining').textContent=percent+'%'; $('#bar').style.width=percent+'%'; $('#cleaved').textContent=cleaved; $('#bondTotal').textContent='of '+total+' accessible sites'; $('#dextrins').textContent=dextrins; $('#glucose').textContent=glucose; $('#debranched').textContent=debranched; }
       function draw(t){ ctx.clearRect(0,0,W,H); const cx=W/2,cy=H/2; const g=ctx.createRadialGradient(cx,cy,0,cx,cy,260);g.addColorStop(0,'#1d5d6538');g.addColorStop(1,'#071b2500');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
         bonds.forEach(b=>{if(!b.alive)return;const branch=b.type==='a16',p=endpoints(b),x=(p.x1+p.x2)/2,y=(p.y1+p.y2)/2;ctx.setLineDash(branch?[5,4]:[]);ctx.strokeStyle=branch?'#ff8787':'#ffcb6b';ctx.lineWidth=branch?2.5:2;ctx.beginPath();ctx.moveTo(p.x1,p.y1);ctx.lineTo(p.x2,p.y2);ctx.stroke();ctx.setLineDash([]);if(branch){ctx.fillStyle='#ffd9d9';ctx.font='700 10px sans-serif';ctx.textAlign='center';ctx.fillText('α1→6',x,y-6);}if(b.betaTarget){ctx.strokeStyle='#ad8bff';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x,y,8,0,Math.PI*2);ctx.stroke();}});
