@@ -166,12 +166,19 @@ $('reveal-all').addEventListener('click', () => {
   for (const record of Object.values(state.records)) if (!record.revealed) { record.revealed = true; record.source = 'class'; }
   state.plate = 'all'; save(); render();
 });
+function answerText(field) {
+  if (field.tagName === 'SELECT' && field.value) {
+    return field.selectedOptions[0].textContent;
+  }
+  return field.value;
+}
+
 function report() {
   const lines = ['BIOKEMI 2 — STARCH AND GLYCOGEN DAY WORKBOOK', '09:00–17:00 · lectures, theory, brewing, virtual lab and exam-style assignment', `Group / initials: ${state.answers.group || '(not entered)'}`, `Exported: ${new Date().toISOString()}`, ''];
   function writtenSection(section, title) {
     lines.push(title, '');
     answerFields.filter(field => field.dataset.section === section).forEach(field => {
-      lines.push(field.dataset.prompt || field.dataset.save, state.answers[field.dataset.save] || '(not recorded)', '');
+      lines.push(field.dataset.prompt || field.dataset.save, answerText(field) || '(not recorded)', '');
     });
   }
   writtenSection('lectures', '09:00–10:45 — LECTURE NOTES');
@@ -202,7 +209,7 @@ document.querySelectorAll('#export, #export-bottom, [data-action="export"]').for
 document.querySelectorAll('#print, #print-bottom, [data-action="print"]').forEach(button => button.addEventListener('click', () => window.print()));
 window.addEventListener('beforeprint', () => {
   document.querySelectorAll('.print-answer').forEach(el => el.remove());
-  document.querySelectorAll('textarea, select[data-save]').forEach(input => { const text = document.createElement('div'); text.className = 'print-answer'; text.textContent = input.value || 'Answer: __________________________________________________________'; input.after(text); });
+  document.querySelectorAll('textarea, select[data-save]').forEach(input => { const text = document.createElement('div'); text.className = 'print-answer'; text.textContent = answerText(input) || 'Answer: __________________________________________________________'; input.after(text); });
 });
 window.addEventListener('afterprint', () => document.querySelectorAll('.print-answer').forEach(el => el.remove()));
 $('reset').addEventListener('click', () => {
