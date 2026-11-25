@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#071c2a" />
+    <title>Starch Breakdown Lab</title>
+    <style>
+      :root { --ink:#e8f5f7; --muted:#a6c0c7; --panel:#0e2c3bd9; --line:#ffffff1f; --cyan:#47dfd2; --sun:#ffcb6b; --violet:#ad8bff; --danger:#ff8585; }
+      * { box-sizing:border-box; }
+      body { margin:0; color:var(--ink); font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:radial-gradient(circle at 7% 0%,#144b59 0,transparent 28rem),radial-gradient(circle at 96% 100%,#352261 0,transparent 35rem),#061923; min-height:100vh; }
+      .shell { width:min(1380px,calc(100% - 32px)); margin:0 auto; padding:30px 0 36px; }
+      header { display:flex; gap:24px; justify-content:space-between; align-items:flex-end; margin-bottom:25px; }
+      .eyebrow { margin:0 0 8px; text-transform:uppercase; letter-spacing:.18em; color:var(--cyan); font-size:.72rem; font-weight:750; }
+      h1 { font-size:clamp(2rem,4vw,3.7rem); margin:0; line-height:.98; letter-spacing:-.06em; }
+      .subtitle { max-width:500px; color:var(--muted); line-height:1.5; margin:14px 0 0; }
+      .status { display:flex; gap:9px; align-items:center; border:1px solid var(--line); background:#0b2532aa; border-radius:99px; padding:9px 13px; white-space:nowrap; font-size:.84rem; color:var(--muted); }
+      .dot { height:8px; width:8px; border-radius:50%; background:var(--cyan); box-shadow:0 0 15px var(--cyan); }
+      .lab { display:grid; grid-template-columns:285px minmax(0,1fr) 260px; gap:16px; }
+      .panel { background:var(--panel); border:1px solid var(--line); box-shadow:0 16px 35px #00121e55; backdrop-filter:blur(12px); border-radius:20px; }
+      .controls { padding:20px; }
+      .panel h2 { font-size:.78rem; letter-spacing:.12em; text-transform:uppercase; color:#b9d3d8; margin:0 0 19px; }
+      .control { margin:0 0 24px; }
+      .control-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:.9rem; font-weight:650; }
+      output { font-variant-numeric:tabular-nums; color:var(--cyan); font-size:.82rem; font-weight:700; }
+      input[type="range"] { appearance:none; width:100%; height:7px; border-radius:6px; background:linear-gradient(to right,var(--accent) 0 var(--fill),#d9f2f51b var(--fill) 100%); outline:none; }
+      input[type="range"]::-webkit-slider-thumb { appearance:none; height:18px; width:18px; border-radius:50%; background:#efffff; box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 32%,transparent); cursor:pointer; }
+      .hint { color:var(--muted); font-size:.77rem; line-height:1.4; margin:7px 0 0; }
+      .transport { border-top:1px solid var(--line); padding-top:18px; margin-top:5px; }
+      .toggle { display:flex; gap:10px; align-items:center; color:var(--muted); font-size:.82rem; cursor:pointer; }
+      .toggle input { accent-color:var(--cyan); width:17px; height:17px; }
+      .stage-wrap { min-height:600px; position:relative; overflow:hidden; }
+      canvas { width:100%; height:100%; min-height:600px; display:block; }
+      .stage-label { position:absolute; top:19px; left:20px; display:flex; gap:8px; align-items:center; color:#c6e5e8; font-size:.78rem; letter-spacing:.07em; text-transform:uppercase; pointer-events:none; }
+      .stage-label span { display:inline-block; height:8px; width:8px; border-radius:50%; background:var(--sun); box-shadow:0 0 10px var(--sun); }
+      .legend { position:absolute; bottom:17px; left:18px; right:18px; display:flex; flex-wrap:wrap; gap:8px; pointer-events:none; }
+      .chip { font-size:.7rem; border:1px solid #ffffff22; border-radius:99px; padding:5px 8px; background:#08212cba; color:#cce0e3; }
+      .chip i { display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:5px; }
+      .metrics { padding:20px; display:flex; flex-direction:column; }
+      .metric { padding:14px 0; border-bottom:1px solid var(--line); }
+      .metric:last-of-type { border-bottom:none; }
+      .metric span { display:block; color:var(--muted); font-size:.75rem; }
+      .metric strong { display:block; margin-top:4px; font-size:1.7rem; letter-spacing:-.05em; font-variant-numeric:tabular-nums; }
+      .metric small { color:#8dabb3; font-size:.72rem; }
+      .progress { height:7px; border-radius:99px; background:#ffffff12; overflow:hidden; margin:8px 0 0; }
+      .progress b { display:block; height:100%; background:linear-gradient(90deg,var(--cyan),#a4fff4); border-radius:inherit; transition:width .2s; }
+      .buttons { display:flex; gap:8px; margin-top:auto; padding-top:17px; }
+      button { border:0; padding:10px 12px; border-radius:10px; color:#05202a; background:var(--cyan); font-weight:800; cursor:pointer; flex:1; transition:transform .15s, filter .15s; }
+      button:hover { transform:translateY(-1px); filter:brightness(1.07); }
+      button.secondary { background:#ffffff12; color:var(--ink); border:1px solid #ffffff1c; }
+      .story { margin-top:16px; display:grid; grid-template-columns:1.3fr 1fr 1fr; gap:16px; }
+      .story .panel { padding:18px 20px; }
+      .story h3 { margin:0 0 7px; font-size:.95rem; }
+      .story p { margin:0; font-size:.82rem; line-height:1.55; color:var(--muted); }
+      .key { display:inline-block; font-size:.72rem; color:var(--cyan); margin-bottom:8px; letter-spacing:.09em; text-transform:uppercase; }
+      @media (max-width:1020px) { .lab { grid-template-columns:250px minmax(0,1fr); } .metrics { grid-column:1/-1; display:grid; grid-template-columns:repeat(4,1fr); gap:12px; } .metrics h2,.buttons { grid-column:1/-1; } .metric { padding:0; border:0; } .buttons { margin-top:0; } }
+      @media (max-width:680px) { .shell { width:min(100% - 20px,1380px); padding-top:20px; } header { align-items:flex-start; flex-direction:column; gap:15px; } .lab,.story { grid-template-columns:1fr; } .stage-wrap,canvas { min-height:470px; } .metrics { grid-template-columns:repeat(2,1fr); } }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <p><a href="index.html" style="color:var(--cyan)">Biokemi 2 · 105-minute virtual starch lab & student notebook</a></p>
+      <header>
+        <div><p class="eyebrow">Biochemistry 02 · interactive model</p><h1>Starch breakdown lab</h1><p class="subtitle">Tune enzyme concentration and watch collisions cleave the specific α(1→4) backbone and α(1→6) branch linkages in an amylopectin molecule.</p></div>
+        <div class="status"><i class="dot"></i><span id="statusText">Simulation running</span></div>
+      </header>
+      <section class="lab">
+        <aside class="panel controls">
+          <h2>Reaction controls</h2>
+          <div class="control"><div class="control-top"><label for="amylase">α-amylase</label><output id="amylaseVal">8 µM</output></div><input id="amylase" type="range" min="0" max="24" value="8" style="--accent:#47dfd2;--fill:33.3%"><p class="hint">Cleaves internal α(1→4) glycosidic bonds.</p></div>
+          <div class="control"><div class="control-top"><label for="betaamylase">β-amylase</label><output id="betaamylaseVal">4 µM</output></div><input id="betaamylase" type="range" min="0" max="18" value="4" style="--accent:#ad8bff;--fill:22.2%"><p class="hint">Removes β-maltose from non-reducing ends via α(1→4) cleavage.</p></div>
+          <div class="control"><div class="control-top"><label for="debrancher">ISA / PUL debrancher</label><output id="debrancherVal">3 µM</output></div><input id="debrancher" type="range" min="0" max="14" value="3" style="--accent:#ff8787;--fill:21.4%"><p class="hint">Isoamylase or pullulanase hydrolyzes α(1→6) branch junctions.</p></div>
+          <div class="control"><div class="control-top"><label for="substrate">Starch load</label><output id="substrateVal">100 %</output></div><input id="substrate" type="range" min="35" max="150" value="100" style="--accent:#ffcb6b;--fill:56.5%"><p class="hint">Changes the size of three illustrated starch fragments and resets the simulation.</p></div>
+          <div class="control"><div class="control-top"><label for="speed">Simulation speed</label><output id="speedVal">1.0×</output></div><input id="speed" type="range" min="0.25" max="4" step="0.25" value="1" style="--accent:#75c8ff;--fill:20%"><p class="hint">Speeds up enzyme movement, network motion, and reactions.</p></div>
+          <div class="transport"><label class="toggle"><input id="trails" type="checkbox" checked> Show enzyme trajectories</label></div>
+        </aside>
+        <section class="panel stage-wrap" aria-label="Animated starch degradation model"><canvas id="sim"></canvas><div class="stage-label"><span></span> molecular collision field</div><div class="legend"><span class="chip"><i style="background:#47dfd2"></i>α-amylase · internal α(1→4)</span><span class="chip"><i style="background:#ad8bff"></i>β-amylase · terminal α(1→4)</span><span class="chip"><i style="background:#ffcb6b"></i>α(1→4) backbone</span><span class="chip"><i style="background:#ff8787"></i>α(1→6) branch · ISA/PUL</span></div></section>
+        <aside class="panel metrics">
+          <h2>Live readout</h2>
+          <div class="metric"><span>Illustrated bonds intact</span><strong id="remaining">100%</strong><div class="progress"><b id="bar" style="width:100%"></b></div></div>
+          <div class="metric"><span>Cleaved bonds</span><strong id="cleaved">0</strong><small id="bondTotal">of 60 accessible sites</small></div>
+          <div class="metric"><span>Malto-oligosaccharides</span><strong id="dextrins">0</strong><small>from α-amylase</small></div>
+          <div class="metric"><span>β-maltose released</span><strong id="glucose">0</strong><small>from β-amylase</small></div>
+          <div class="metric"><span>α(1→6) branches removed</span><strong id="debranched">0</strong><small>by ISA / PUL</small></div>
+          <div class="buttons"><button id="pause">Pause</button><button class="secondary" id="reset">Reset</button></div>
+        </aside>
+      </section>
+      <section class="story">
+        <article class="panel"><span class="key">How to use it</span><h3>More balls, more encounters</h3><p>Raise an enzyme concentration to add more moving particles. Each hexagon is a schematic glucose residue: a bond joins C1 to C4, or C1 to the C6 side group at a branch. The moving network is a simplified fragment, not an atomic structure or a kinetic prediction.</p></article>
+        <article class="panel"><span class="key">Endo-acting</span><h3>α-amylase</h3><p>Cleaves internal α(1→4) linkages in the main chain and branch arms, releasing malto-oligosaccharides. It cannot pass an α(1→6) branch point.</p></article>
+        <article class="panel"><span class="key">Exo-acting & debranching</span><h3>β-amylase · ISA · PUL</h3><p>β-amylase targets the purple-ringed α(1→4) site adjacent to a non-reducing end, releasing a two-residue β-maltose unit and exposing the next target. ISA and PUL hydrolyze dashed α(1→6) branch junctions.</p></article>
+      </section>
+    </main>
+    <script>
+      const canvas = document.querySelector('#sim'), ctx = canvas.getContext('2d');
+      const $ = s => document.querySelector(s);
+      const inputs = {amylase:$('#amylase'), betaamylase:$('#betaamylase'), debrancher:$('#debrancher'), substrate:$('#substrate')};
+      let W=0,H=0, running=true, last=0, simTime=0, enzymes=[], bonds=[], nodes=[], chains=[], particles=[], ripples=[], total=0, cleaved=0, dextrins=0, glucose=0, debranched=0;
+      const colors={amylase:'#47dfd2',betaamylase:'#ad8bff',debrancher:'#ff8787'};
+      function resize(){ const r=canvas.getBoundingClientRect(), d=devicePixelRatio||1; W=r.width; H=r.height; canvas.width=W*d; canvas.height=H*d; ctx.setTransform(d,0,0,d,0,0); }
+      function rng(a,b){return a+Math.random()*(b-a)}
+      const sugarRadius=12;
+      function makeBonds(){
+        bonds=[];nodes=[];chains=[];const count=Math.max(4,Math.min(Math.round(7*+inputs.substrate.value/100),Math.floor((W-70)/36)+1)),step=Math.min(48,(W-70)/Math.max(count-1,1)),cx=W/2;
+        const addNode=(x,y)=>{const n={x,y,homeX:x,homeY:y,vx:0,vy:0,released:false};nodes.push(n);return n;};
+        const addBond=(parent,child,type)=>{const b={parent,child,type,alive:true,betaTarget:false,length:Math.hypot(child.x-parent.x,child.y-parent.y)};bonds.push(b);return b;};
+        for(let molecule=0;molecule<3;molecule++){
+          const cy=H*(.27+molecule*.23),main=[];for(let i=0;i<count;i++)main.push(addNode(cx+(i-(count-1)/2)*step,cy+Math.sin(i*.8+molecule)*5));
+          main[0].originalReducing=true;const chain=[];for(let i=1;i<main.length;i++)chain.push(addBond(main[i-1],main[i],'a14'));chains.push(chain);
+          const parent=main[Math.floor(count*.4)],side=molecule===1?1:-1,armLength=3,arm=[];let previous=parent;
+          for(let i=0;i<armLength;i++){const next=addNode(parent.x+(i+1)*step*.75,parent.y+side*(34+i*step*.35));const link=addBond(previous,next,i===0?'a16':'a14');if(i>0)arm.push(link);previous=next;}chains.push(arm);
+        }
+        total=bonds.length;refreshTerminals();
+      }
+      function refreshTerminals(){
+        bonds.forEach(b=>b.betaTarget=false);nodes.forEach(n=>{n.reducing=false;n.nonreducing=false;});
+        nodes.filter(n=>!n.released).forEach(n=>{const outgoing=bonds.some(b=>b.alive&&b.parent===n),incoming=bonds.some(b=>b.alive&&b.child===n);n.reducing=!incoming;n.nonreducing=!outgoing;const free=!incoming&&!outgoing;if(free&&!n.free){const angle=rng(0,Math.PI*2),speed=rng(18,30);n.vx=Math.cos(angle)*speed;n.vy=Math.sin(angle)*speed;}n.free=free;});
+        nodes.filter(n=>n.nonreducing&&!n.released).forEach(end=>{const outer=bonds.find(b=>b.alive&&b.type==='a14'&&b.child===end);if(!outer)return;const middle=outer.parent;if(bonds.some(b=>b.alive&&b.type==='a16'&&b.parent===middle))return;const target=bonds.find(b=>b.alive&&b.type==='a14'&&b.child===middle);if(target){target.betaTarget=true;target.maltoseOuter=outer;}});
+      }
+      function desired(type){return Math.round(+inputs[type].value*.7)}
+      function refill(){ const all=['amylase','betaamylase','debrancher']; all.forEach(type=>{let current=enzymes.filter(e=>e.type===type); while(current.length<desired(type)){const a=rng(0,Math.PI*2), v=rng(55,90); const e={type,x:W/2+Math.cos(a)*rng(150,260),y:H/2+Math.sin(a)*rng(125,220),vx:Math.cos(a)*v,vy:Math.sin(a)*v,r:type==='amylase'?9:8,trail:[]}; enzymes.push(e); current.push(e);} if(current.length>desired(type)){let n=current.length-desired(type); enzymes=enzymes.filter(e=>!(e.type===type&&n-->0));}}); }
+      function reset(){cleaved=0;dextrins=0;glucose=0;debranched=0;particles=[];ripples=[];enzymes=[];makeBonds();refill();updateReadout();}
+      function addProduct(x,y,isGlucose){particles.push({x,y,vx:rng(-38,38),vy:rng(-38,38),life:1,glucose:isGlucose});}
+      function endpoints(b){return {x1:b.parent.x+(b.type==='a14'?sugarRadius:-sugarRadius*.5),y1:b.parent.y+(b.type==='a14'?0:-sugarRadius*1.55),x2:b.child.x-sugarRadius,y2:b.child.y};}
+      function hit(e,b){const compatible=(e.type==='amylase'&&b.type==='a14'&&!b.parent.released&&!b.child.released) || (e.type==='betaamylase'&&b.betaTarget) || (e.type==='debrancher'&&b.type==='a16');if(!b.alive||!compatible)return;const p=endpoints(b),x=(p.x1+p.x2)/2,y=(p.y1+p.y2)/2,dx=e.x-x,dy=e.y-y;if(dx*dx+dy*dy>(e.r+12)**2||Math.random()>.12)return;b.alive=false;cleaved++;if(e.type==='amylase')dextrins++;else if(e.type==='betaamylase'){b.child.released=true;b.maltoseOuter.child.released=true;glucose++;}else debranched++;refreshTerminals();ripples.push({x,y,r:3,life:1,c:colors[e.type]});addProduct(x,y,e.type==='betaamylase');updateReadout();}
+      function bounceFromResidues(e){nodes.forEach(n=>{const dx=e.x-n.x,dy=e.y-n.y,dist=Math.hypot(dx,dy)||.001,min=e.r+sugarRadius;if(dist>=min)return;const nx=dx/dist,ny=dy/dist,overlap=min-dist;e.x+=nx*overlap;e.y+=ny*overlap;const toward=e.vx*nx+e.vy*ny;if(toward<0){e.vx-=2*toward*nx;e.vy-=2*toward*ny;n.vx-=nx*4;n.vy-=ny*4;}});}
+      function moveNetwork(dt,t){nodes.forEach((n,i)=>{if(n.free){n.vx+=Math.sin(t*.0012+i)*4*dt;n.vy+=Math.cos(t*.001+i)*4*dt;}else{n.vx+=(n.homeX-n.x)*.65*dt+Math.sin(t*.0008+i)*.8*dt;n.vy+=(n.homeY-n.y)*.65*dt+Math.cos(t*.001+i)*.8*dt;}});bonds.filter(b=>b.alive).forEach(b=>{const dx=b.child.x-b.parent.x,dy=b.child.y-b.parent.y,d=Math.hypot(dx,dy)||1,force=(d-b.length)*2*dt,fx=dx/d*force,fy=dy/d*force;b.parent.vx+=fx;b.parent.vy+=fy;b.child.vx-=fx;b.child.vy-=fy;});nodes.forEach(n=>{n.vx*=n.free?.999:.99;n.vy*=n.free?.999:.99;n.x+=n.vx*dt;n.y+=n.vy*dt;if(n.free){const margin=sugarRadius+4;if(n.x<margin){n.x=margin;n.vx=Math.abs(n.vx);}if(n.x>W-margin){n.x=W-margin;n.vx=-Math.abs(n.vx);}if(n.y<margin){n.y=margin;n.vy=Math.abs(n.vy);}if(n.y>H-margin){n.y=H-margin;n.vy=-Math.abs(n.vy);}}});}
+      function updateReadout(){ const alive=bonds.filter(b=>b.alive).length, percent=Math.max(0,Math.round(alive/Math.max(1,total)*100)); $('#remaining').textContent=percent+'%'; $('#bar').style.width=percent+'%'; $('#cleaved').textContent=cleaved; $('#bondTotal').textContent='of '+total+' accessible sites'; $('#dextrins').textContent=dextrins; $('#glucose').textContent=glucose; $('#debranched').textContent=debranched; }
+      function draw(t){ ctx.clearRect(0,0,W,H); const cx=W/2,cy=H/2; const g=ctx.createRadialGradient(cx,cy,0,cx,cy,260);g.addColorStop(0,'#1d5d6538');g.addColorStop(1,'#071b2500');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+        bonds.forEach(b=>{if(!b.alive)return;const branch=b.type==='a16',p=endpoints(b),x=(p.x1+p.x2)/2,y=(p.y1+p.y2)/2;ctx.setLineDash(branch?[5,4]:[]);ctx.strokeStyle=branch?'#ff8787':'#ffcb6b';ctx.lineWidth=branch?2.5:2;ctx.beginPath();ctx.moveTo(p.x1,p.y1);ctx.lineTo(p.x2,p.y2);ctx.stroke();ctx.setLineDash([]);if(branch){ctx.fillStyle='#ffd9d9';ctx.font='700 10px sans-serif';ctx.textAlign='center';ctx.fillText('α1→6',x,y-6);}if(b.betaTarget){ctx.strokeStyle='#ad8bff';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x,y,8,0,Math.PI*2);ctx.stroke();}});
+        nodes.forEach(n=>{ctx.fillStyle=n.released?'#a3aaa0':'#fff0c9';ctx.strokeStyle='#ffcb6b';ctx.lineWidth=1.2;ctx.beginPath();for(let i=0;i<6;i++){const a=i*Math.PI/3,x=n.x+Math.cos(a)*sugarRadius,y=n.y+Math.sin(a)*sugarRadius;i?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle='#68431c';ctx.font='700 8px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('Glc',n.x,n.y);ctx.fillStyle='#c6dcdf';ctx.font='8px sans-serif';ctx.fillText('1',n.x-sugarRadius-4,n.y+2);ctx.fillText('4',n.x+sugarRadius+4,n.y+2);ctx.strokeStyle='#ffcb6b';ctx.beginPath();ctx.moveTo(n.x-6,n.y-10);ctx.lineTo(n.x-6,n.y-18);ctx.stroke();ctx.fillStyle='#c6dcdf';ctx.fillText('6',n.x-6,n.y-22);});
+        nodes.filter(n=>(n.reducing||n.nonreducing)&&!n.released).forEach(n=>{const label=n.reducing&&n.nonreducing?'free glucose':n.reducing?'reducing end':'non-reducing end',dy=n.y<cy?-35:34;ctx.fillStyle=n.reducing?'#7ef7ed':'#d5c6ff';ctx.font='700 9px sans-serif';ctx.textAlign='center';ctx.fillText(label,n.x,Math.max(60,Math.min(H-65,n.y+dy)));});
+        if($('#trails').checked) enzymes.forEach(e=>{ctx.strokeStyle=colors[e.type]+'35';ctx.lineWidth=1;ctx.beginPath();e.trail.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();});
+        particles.forEach(p=>{ctx.globalAlpha=p.life;ctx.fillStyle=p.glucose?'#effffb':'#ffc96c';ctx.beginPath();ctx.arc(p.x,p.y,p.glucose?4:3,0,Math.PI*2);ctx.fill();});ctx.globalAlpha=1;
+        ripples.forEach(r=>{ctx.globalAlpha=r.life*.75;ctx.strokeStyle=r.c;ctx.lineWidth=2;ctx.beginPath();ctx.arc(r.x,r.y,r.r,0,Math.PI*2);ctx.stroke();});ctx.globalAlpha=1;
+        enzymes.forEach(e=>{ctx.fillStyle=colors[e.type];ctx.shadowColor=colors[e.type];ctx.shadowBlur=14;ctx.beginPath();ctx.arc(e.x,e.y,e.r,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#062431';ctx.font='700 8px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(e.type==='amylase'?'A':e.type==='betaamylase'?'β':'D',e.x,e.y+.5);});
+        ctx.fillStyle='#d6f5f3';ctx.font='700 13px sans-serif';ctx.textAlign='center';ctx.fillText('AMYLOPECTIN FRAGMENTS',cx,58);ctx.fillStyle='#9fc5c5';ctx.font='10px sans-serif';ctx.fillText('schematic glucose units · C6 is outside the ring',cx,75);
+      }
+      function tick(ts){const elapsed=Math.min(.035,(ts-last||16)/1000);last=ts;if(running){refill();const scaled=elapsed*(+$('#speed').value),steps=Math.ceil(scaled/.02),dt=scaled/steps;for(let step=0;step<steps;step++){simTime+=dt*1000;moveNetwork(dt,simTime);enzymes.forEach(e=>{e.x+=e.vx*dt;e.y+=e.vy*dt;if(e.x<e.r){e.x=e.r;e.vx=Math.abs(e.vx)}if(e.x>W-e.r){e.x=W-e.r;e.vx=-Math.abs(e.vx)}if(e.y<e.r){e.y=e.r;e.vy=Math.abs(e.vy)}if(e.y>H-e.r){e.y=H-e.r;e.vy=-Math.abs(e.vy)}bonds.forEach(b=>hit(e,b));bounceFromResidues(e);});particles.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt*.26;});ripples.forEach(r=>{r.r+=dt*43;r.life-=dt*.9;});}enzymes.forEach(e=>{e.trail.push({x:e.x,y:e.y});if(e.trail.length>12)e.trail.shift();});particles=particles.filter(p=>p.life>0);ripples=ripples.filter(r=>r.life>0);}draw(ts);requestAnimationFrame(tick);}
+      Object.entries(inputs).forEach(([id,input])=>input.addEventListener('input',()=>{const min=+input.min,max=+input.max,v=+input.value;input.style.setProperty('--fill',((v-min)/(max-min)*100)+'%');$('#'+id+'Val').textContent=id==='substrate'?v+' %':v+' µM';if(id==='substrate')reset();else refill();}));
+      $('#speed').addEventListener('input',e=>{const v=+e.target.value;$('#speedVal').textContent=v.toFixed(v%1===0?1:2)+'×';e.target.style.setProperty('--fill',((v-.25)/3.75*100)+'%');});
+      $('#pause').onclick=()=>{running=!running;$('#pause').textContent=running?'Pause':'Resume';$('#statusText').textContent=running?'Simulation running':'Simulation paused';}; $('#reset').onclick=reset;
+      new ResizeObserver(()=>{resize();reset();}).observe(canvas); resize();reset();requestAnimationFrame(tick);
+    </script>
+  </body>
+</html>

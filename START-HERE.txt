@@ -1,0 +1,21 @@
+BIOKEMI 2 — VIRTUAL STARCH LAB
+
+Extract the entire ZIP and open index.html in a modern browser.
+Keep the HTML, CSS and JavaScript files together.
+No installation, login, internet connection or server is required.
+
+Student exercise: index.html
+Written worksheet: EXERCISE.md
+Instructor timing and answer notes: instructor.html
+Optional particle sandbox: simulation.html
+
+The activity adapts Section A of LabManual_2023-2024_Danish.docx into
+14:00–15:45 (105 minutes). It retains all 15 original conditions.
+Iodine and TLC outputs are simulated qualitative teaching examples,
+NOT measured experimental data.
+
+Download the notebook before leaving. There is no submission server.
+Instructor notes are openly accessible.
+
+Online exercise: https://mutwil.github.io/biokemi2-starch-lab/
+Source: https://github.com/mutwil/biokemi2-starch-lab
