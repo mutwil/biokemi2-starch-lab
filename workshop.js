@@ -1,5 +1,18 @@
 'use strict';
 const $ = id => document.getElementById(id);
+const modelLauncher = $('starch-model');
+modelLauncher.addEventListener('toggle', () => {
+  if (modelLauncher.open && !modelLauncher.querySelector('iframe')) {
+    modelLauncher.append(modelLauncher.querySelector('template').content.cloneNode(true));
+  }
+});
+window.addEventListener('message', event => {
+  const frame = modelLauncher.querySelector('iframe');
+  if (frame && event.source === frame.contentWindow && event.data?.type === 'starch-model-height') {
+    const height = event.data.height;
+    if (Number.isSafeInteger(height) && height > 0) frame.style.height = height + 'px';
+  }
+});
 const M = StarchLab;
 const KEY = 'biokemi2-starch-lab-v2';
 // Keep the storage key so existing lab answers survive the full-day expansion.

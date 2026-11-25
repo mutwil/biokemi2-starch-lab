@@ -59,7 +59,7 @@
   </head>
   <body>
     <main class="shell">
-      <p><a href="index.html" style="color:var(--cyan)">Biokemi 2 · 105-minute virtual starch lab & student notebook</a></p>
+      <p id="workbook-return"><a href="index.html#brief" target="_top" style="color:var(--cyan)">Biokemi 2 · 105-minute virtual starch lab & student notebook</a></p>
       <header>
         <div><p class="eyebrow">Biochemistry 02 · interactive model</p><h1>Starch breakdown lab</h1><p class="subtitle">Tune enzyme concentration and watch collisions cleave the specific α(1→4) backbone and α(1→6) branch linkages in an amylopectin molecule.</p></div>
         <div class="status"><i class="dot"></i><span id="statusText">Simulation running</span></div>
@@ -94,6 +94,13 @@
     <script>
       const canvas = document.querySelector('#sim'), ctx = canvas.getContext('2d');
       const $ = s => document.querySelector(s);
+      if (window.parent !== window) {
+        $('#workbook-return').hidden = true;
+        const shell = $('.shell');
+        new ResizeObserver(() => {
+          window.parent.postMessage({type: 'starch-model-height', height: shell.offsetHeight}, '*');
+        }).observe(shell);
+      }
       const inputs = {amylase:$('#amylase'), betaamylase:$('#betaamylase'), debrancher:$('#debrancher'), substrate:$('#substrate')};
       let W=0,H=0, running=true, last=0, simTime=0, enzymes=[], bonds=[], nodes=[], chains=[], particles=[], ripples=[], total=0, cleaved=0, dextrins=0, glucose=0, debranched=0;
       const colors={amylase:'#47dfd2',betaamylase:'#ad8bff',debrancher:'#ff8787'};
