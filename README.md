@@ -20,9 +20,9 @@ The previously open afternoon slot now contains the virtual lab. Work in groups 
 ## Start here
 
 1. Open the [day workbook](https://mutwil.github.io/biokemi2-starch-lab/), which starts with the schedule.
-2. Follow its links to the relevant session. All six theoretical questions and all four exam-style questions appear inline, with figures and answer fields.
+2. Follow its links to the relevant session. The five morning question groups and four exam questions appear inline with their figures and answer choices.
 3. Attempt each exercise before unfolding its answer discussion.
-4. In the virtual lab, record predictions before revealing the 15 sample conditions and comparing iodine and TLC.
+4. In the virtual lab, predict the five conditions for your assigned substrate. Use the on-page guide to compare its iodine signals and TLC lanes, then reveal the class dataset.
 5. Download the **day notebook**. It includes lecture and industry notes, theoretical answers, lab predictions and interpretations, and exam answers in chronological order.
 6. Submit using the instructor’s normal course channel. The website does not collect submissions.
 
@@ -32,8 +32,8 @@ Answers are saved only in the current browser when storage is available. **Downl
 
 ## Teaching materials
 
-- [Theoretical exercise](https://mutwil.github.io/biokemi2-starch-lab/#theory): six original question groups, including enzyme classification, pathway completion, seedling images and TLC interpretation.
-- [Virtual lab](https://mutwil.github.io/biokemi2-starch-lab/#brief): the 105-minute in silico adaptation of Section A of the original manual.
+- [Theoretical exercise](https://mutwil.github.io/biokemi2-starch-lab/#theory): five question groups on glucan structure, storage, enzyme roles, pathway maps and seedling staining.
+- [Virtual lab](https://mutwil.github.io/biokemi2-starch-lab/#brief): a 105-minute investigation with the full sample matrix, protocol and TLC guidance alongside the virtual bench and plate.
 - [Exam-style assignment](https://mutwil.github.io/biokemi2-starch-lab/#exam): four questions about β-amylolytic limits, with the supplied 46% potato and 43% maize values.
 - [Instructor guide](https://mutwil.github.io/biokemi2-starch-lab/instructor.html): facilitation and marking notes.
 - [Source and adaptation notes](SOURCES.md): provenance and scientific clarifications.
@@ -61,7 +61,7 @@ The four TLC standards are glucose, maltose, maltotetraose and maltoheptaose. De
 | 14:50–14:55 | Break |
 | 14:55–15:20 | Interpret TLC using standards and both detection methods |
 | 15:20–15:35 | Compare all three substrates |
-| 15:35–15:45 | Complete the results table and conclusion; export the notebook |
+| 15:35–15:45 | Review the results table and interpretation questions, then export the notebook |
 
 ## Scientific scope and provenance
 

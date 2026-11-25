@@ -6,14 +6,14 @@ The workbook combines materials supplied by the course instructor into one chron
 
 Sources from the supplied `theoretical exercise` folder:
 
-- `theoretical_exercise_slides_for-class_v1_students.pptx`: all six question groups, structure figures, seedling photos and TLC schematic.
+- `theoretical_exercise_slides_for-class_v1_students.pptx`: source questions, structure figures and seedling photos.
 - `theoretical_exercise_slides_for-class_v1_answers.pptx`: answer discussions and pathway labels.
 - `theoretical_exercise_slides_for-class_v1.pptx`: checked for coverage against the student and answer versions.
 - `theoretical_exercise_v2_with-answers-for-absalon.docx`: question wording and explanations.
 
-The source structure figures and seedling photos are reproduced from the supplied slides. Their original external provenance is not specified in those slides. The source worksheet credits [Microbe Notes](https://microbenotes.com/thin-layer-chromatography/) for the TLC schematic. Figures 1 and 2 reproduce the instructor-supplied synthesis and degradation diagrams. Numbered overlays link each red box to its corresponding reaction card.
+The source structure figures and seedling photos are reproduced from the supplied slides. Their original external provenance is not specified in those slides. Figures 1 and 2 reproduce the instructor-supplied synthesis and degradation diagrams. Numbered overlays link each red box to its corresponding reaction card.
 
-All six questions appear inline, including the four parts of the seedling question and the four parts of the TLC question. Answer discussions are folded by default. No PowerPoint application or source-file download is needed to complete the exercise.
+The morning workbook uses the first five question groups, ending with the four-part seedling analysis. In place of the source deck’s sixth question, students learn to interpret TLC in the afternoon by comparing their own sample lanes with the standards.
 
 ## 14:00–15:45: virtual starch-degradation lab
 

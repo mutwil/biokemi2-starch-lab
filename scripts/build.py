@@ -12,7 +12,7 @@ PUBLIC = (
     'instructor.html', 'simulation.html', 'EXERCISE.md', 'START-HERE.txt', 'SOURCES.md',
     'assets/starch-synthesis.png', 'assets/starch-degradation.png',
     'assets/structure-a.png', 'assets/structure-b.png',
-    'assets/seedling-left.png', 'assets/seedling-right.png', 'assets/tlc-principle.png',
+    'assets/seedling-left.png', 'assets/seedling-right.png',
     'materials/exam-questions-da.pdf', 'answer-data.js', 'answer-lock.js',
 )
 

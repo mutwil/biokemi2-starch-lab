@@ -45,3 +45,7 @@
 .answer-parts > li { margin: .55rem 0; }
 .answer-parts > li::marker { font-weight: 700; }
 label[data-legacy-response][hidden] { display: none; }
+
+@media screen and (min-width: 701px) {
+  #sample-number, #tlc { scroll-margin-top: 5rem; }
+}

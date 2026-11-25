@@ -1,74 +1,46 @@
-# Exercise: what survives the enzyme?
+# Which bonds can the enzyme reach?
 
-**PLEN · Biokemi 2 · 105 minutes · Groups of 3–4**
+**Biokemi 2 · 14:00–15:45 · Groups of 3–4**
 
-[Open the interactive lab](https://mutwil.github.io/biokemi2-starch-lab/).
+Work with one substrate for the first hour. By the end, your group should be able to use a matched control and two readouts to explain how an enzyme changed that substrate. The workbook contains the sample matrix, the protocol and the plate-reading guide. [Open the virtual lab](https://mutwil.github.io/biokemi2-starch-lab/#brief).
 
-## Your question
+## 14:00–14:10 · Choose your row
 
-How do branching, physical structure and enzyme specificity determine the products of glucan hydrolysis?
-
-You will compare glycogen, potato starch and an amylose-rich barley starch preparation with saliva, isoamylase and buffer controls. The original wet-lab procedure has been replaced with a virtual experiment and simulated analytical evidence. There is no practical laboratory work or coding in this exercise.
-
-## 1. Understand the design · 10 minutes
-
-Inspect the three substrate descriptions and the protocol in the lab. All reactions contain 100 µl substrate plus 100 µl diluted saliva, isoamylase or Tris. All incubate at 37°C for 30 min before cooling on ice. Heat-treated substrate first receives 60°C for 5 min.
-
-1. Draw or describe an α(1→4) linkage and an α(1→6) linkage, identifying the participating carbon positions.
-2. Explain what makes an end reducing or nonreducing.
-3. Identify which enzyme activity saliva supplies and what isoamylase targets.
-
-## 2. Predict your five samples · 20 minutes
-
-Your instructor assigns one substrate. Select each of its five numbered samples in the matrix and record a prediction before revealing any result.
-
-Choose the expected cleavage pattern for each sample. After reveal, compare the feedback with the iodine and TLC results. Use the observation field for your own notes.
+Glycogen is highly branched. Potato starch contains mainly amylopectin, with some amylose, packed in granules. The amylose-rich preparation is modelled as unbranched. Each has an α(1→4) backbone. In branched glucans, α(1→6) bonds attach the side chains.
 
 | Substrate | Tris, untreated | Tris, heated | Saliva, untreated | Saliva, heated | Isoamylase, heated |
 |---|---:|---:|---:|---:|---:|
 | Glycogen | 1 | 4 | 7 | 10 | 13 |
 | Potato starch | 2 | 5 | 8 | 11 | 14 |
-| “Pure amylose” starch | 3 | 6 | 9 | 12 | 15 |
+| Amylose-rich starch | 3 | 6 | 9 | 12 | 15 |
 
-**Discuss:** Can this matrix isolate the effect of heating on isoamylase treatment? Identify any missing condition.
+“Heated” means that the substrate received 60°C for 5 minutes **before** adding the enzyme or Tris buffer. Every reaction then incubated at 37°C for 30 minutes. Tris is the buffer control.
 
-## 3. Run the virtual reactions · 20 minutes
+## 14:10–14:30 · Predict your five samples
 
-Reveal your five samples individually. The virtual experiment skips the 30-minute incubation and shows an illustrative endpoint.
+1. On the virtual bench, open a numbered sample in your group’s row.
+2. Choose the expected cleavage pattern. Salivary α-amylase cuts accessible α(1→4) bonds inside a chain. Isoamylase cuts α(1→6) branch junctions.
+3. Repeat for your other four samples. For one enzyme sample, identify the Tris control with the same substrate and pretreatment. You will need this pair when you read the plate.
 
-1. Compare each result with your saved prediction. Predictions lock at reveal; put revisions in the observation/interpretation field.
-2. Toggle the molecular diagram between before reaction and after cleavage. Identify the new reducing ends.
-3. Compare iodine signals. Explain why a change in colour could reflect chain structure or accessibility.
-4. Identify a case where long chains remain even though the enzyme has acted.
+## 14:30–14:50 · Reveal and inspect
 
-**Break · 5 minutes.**
+Use **Run virtual sample** for each prediction. The workbook jumps to the reaction endpoint. For your chosen pair, compare the iodine signals. On the enzyme sample, switch between **Before reaction** and **After reaction**, find the bond marked with a cross if one was cut, and follow the released chain. Use the observation field to record the sample numbers and one visible difference or similarity.
 
-## 4. Interpret TLC · 25 minutes
+**14:50–14:55 · Break**
 
-Choose your substrate in the TLC panel. Inspect the plate using both iodine vapour and sugar staining/charring.
+## 14:55–15:20 · Read your TLC plate
 
-The mixed standards contain glucose (DP1), maltose (DP2), maltotetraose (DP4) and maltoheptaose (DP7). DP means degree of polymerization. The displayed Rf positions are illustrative, not measurements from the manual.
+Thin-layer chromatography (TLC) separates products as solvent travels up the plate. Select your substrate under **Samples on the plate**.
 
-Complete the TLC and iodine multiple-choice questions in the workbook. Use the reference lanes and both detection methods to evaluate each option, then check the feedback.
+1. Select **Sugar staining / charring**. The origin is the starting line near the bottom. Find the two lanes marked **S**. They contain glucose, maltose, maltotetraose and maltoheptaose, with 1, 2, 4 and 7 glucose units respectively. These chain lengths are labelled **DP** on the plate.
+2. Compare your enzyme lane with its matched Tris control. Trace one band horizontally to the standard lanes. A match in height gives a candidate identity. Material remaining near the origin may include several long or branched products.
+3. Switch to **Iodine vapour** and compare the same pair. Look for a band visible in one view but faint or undetected in the other. Iodine detects suitable long glucan chains. Charring also reveals small sugars. The dotted guides mark reference positions in both views.
+4. Answer the plate questions and check the feedback. These readouts are qualitative. A darker spot alone cannot tell you how many milligrams of maltose formed.
 
-## 5. Compare substrates · 15 minutes
+## 15:20–15:35 · Compare with the class
 
-Use **Reveal class dataset** after discussion with the other groups. Missing predictions are marked as not recorded; this does not erase predictions you already made.
+Once your own five samples are complete, use **Reveal class dataset**. Compare sample 14 with its control (5) and sample 15 with its control (6). Both enzyme samples received isoamylase. Use the product patterns and substrate structures to explain why only one preparation releases chains.
 
-Use numbered comparisons to discuss:
+## 15:35–15:45 · Finish your notebook
 
-1. Enzyme effects relative to matched Tris controls.
-2. Differences between untreated and heated saliva samples.
-3. Why a linear glucan can still be relatively resistant to hydrolysis.
-4. Why isoamylase can release chains without eliminating iodine staining.
-5. A consequence for brewing or starch processing, and the evidence needed before applying the scenario to a real process.
-
-## 6. Submit your interpretation · 10 minutes
-
-Review the assembled results table, then complete the multiple-choice questions on controls, the conclusion and transfer to brewing. Use the feedback to revisit the sample comparisons.
-
-Download the lab notebook or use **Print / save PDF**, then submit through the course channel specified by your instructor. GitHub does not collect your answers.
-
-## Evidence limits
-
-The matrix is adapted from the original laboratory manual, but **the displayed results are simulated teaching examples**. Colours, band darkness and Rf values are not quantitative experimental data. Co-migration supports a provisional identity; it does not prove it. Complete gelatinization after 60°C for 5 min is not assumed. The linkage sketch is a small fragment and does not generate the iodine or TLC readouts.
+Review your results table, complete the questions on controls, conclusions and brewing, and use the feedback to check your interpretation against the relevant samples. Choose **Download notebook** or **Print / save PDF** to keep the completed work. Submit through your instructor’s course channel.

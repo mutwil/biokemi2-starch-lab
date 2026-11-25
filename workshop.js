@@ -13,13 +13,17 @@ try {
     if (M.samples.some(s => s.id === saved.selected)) state.selected = saved.selected;
     if (['all', ...M.substrates.map(s => s.id)].includes(saved.plate)) state.plate = saved.plate;
     if (['char', 'iodine'].includes(saved.detector)) state.detector = saved.detector;
+    // Preserve completed TLC prep from earlier workbooks in the student's download.
+    for (const [key, value] of Object.entries(saved.answers || {})) {
+      if (/^theory-6(?:-[a-d](?:-mcq)?)?$/.test(key) && typeof value === 'string' && value) {
+        state.answers[key] = value;
+      }
+    }
     for (const key of answerFields.map(field => field.dataset.save)) {
       const value = saved.answers?.[key];
       if (typeof value !== 'string') continue;
       if (key.startsWith('theory-4-') && value === 'ISA1 / ISA2 complex') {
         state.answers[key] = 'Isoamylase / pullulanase-type debrancher';
-      } else if (key === 'theory-6-b-mcq' && value === 'Each substrate receives Tris or saliva with and without heat pretreatment, plus heated isoamylase treatment.') {
-        state.answers[key] = 'Tris and saliva are each tested with untreated and preheated substrate. Isoamylase is tested only with preheated substrate.';
       } else {
         state.answers[key] = value;
       }
@@ -32,6 +36,7 @@ try {
     }
   }
 } catch (_) { /* Offline/file URL storage may be unavailable. Export still works. */ }
+after = state.records[state.selected].revealed;
 function save() {
   try { localStorage.setItem(KEY, JSON.stringify(state)); $('save-status').textContent = 'Saved in this browser only. Download your notebook before leaving.'; }
   catch (_) { $('save-status').textContent = 'Browser storage is unavailable. Keep this tab open and download your notebook to retain your answers.'; }
@@ -51,12 +56,15 @@ answerFields.forEach(input => {
   if (oldResponse) oldResponse.hidden = !input.value;
   input.addEventListener('input', event => { state.answers[input.dataset.save] = event.target.value; save(); });
 });
-function selectSample(id, focus = false) {
-  state.selected = Number(id); after = false;
+function selectSample(id) {
+  state.selected = Number(id);
+  after = state.records[state.selected].revealed;
   if (state.plate !== 'all') state.plate = M.sample(id).substrate;
   $('run-message').textContent = '';
   save(); render();
-  if (focus) { $('bench').scrollIntoView({ behavior: 'auto' }); $('prediction').focus({ preventScroll: true }); }
+  const field = after ? $('observation') : $('prediction');
+  $('sample-number').scrollIntoView({ block: 'start' });
+  field.focus({ preventScroll: true });
 }
 function renderMatrix() {
   $('matrix-body').innerHTML = M.substrates.map(s => `<tr><th scope="row">${esc(s.short)}</th>${M.treatments.map(t => {
@@ -66,8 +74,34 @@ function renderMatrix() {
   }).join('')}</tr>`).join('');
   $('matrix-body').querySelectorAll('[data-sample]').forEach(b => b.addEventListener('click', () => selectSample(b.dataset.sample)));
   const count = M.samples.filter(s => state.records[s.id].revealed).length;
-  $('progress').textContent = `${count} / 15 samples revealed`;
+  const group = M.sample(state.selected).substrateInfo;
+  const groupCount = M.samples.filter(s => s.substrate === group.id && state.records[s.id].revealed).length;
+  $('progress').textContent = `${group.short}: ${groupCount} / 5 revealed · Class: ${count} / 15`;
   $('reveal-all').disabled = count === 15;
+}
+const nextBenchStep = document.createElement('button');
+nextBenchStep.type = 'button';
+nextBenchStep.className = 'secondary';
+$('observation').closest('label').after(nextBenchStep);
+function updateNextStep() {
+  const selected = M.sample(state.selected);
+  const group = M.samples.filter(s => s.substrate === selected.substrate);
+  const remaining = group.filter(s => !state.records[s.id].revealed);
+  const nextPrediction = remaining.find(s => !state.records[s.id].prediction);
+  const next = nextPrediction || remaining[0];
+  nextBenchStep.hidden = next?.id === selected.id;
+  if (next) {
+    nextBenchStep.textContent = `Open sample ${next.id} to ${nextPrediction ? 'predict' : 'run'}`;
+    nextBenchStep.onclick = () => selectSample(next.id);
+  } else {
+    nextBenchStep.textContent = `Read the ${selected.substrateInfo.short.toLowerCase()} TLC plate`;
+    nextBenchStep.onclick = () => {
+      state.plate = selected.substrate;
+      save(); renderPlate();
+      $('tlc').scrollIntoView();
+      $('plate-substrate').focus({ preventScroll: true });
+    };
+  }
 }
 function renderBench() {
   const r = M.result(state.selected), record = state.records[r.id], t = r.treatmentInfo;
@@ -84,7 +118,9 @@ function renderBench() {
   }
   prediction.value = record.prediction;
   prediction.disabled = record.revealed;
-  $('prediction-note').textContent = record.revealed ? 'Prediction locked at reveal. Record any revision in your interpretation below.' : 'Switch samples to prepare all five predictions before running the reactions.';
+  $('prediction-note').textContent = record.revealed
+    ? (record.prediction ? 'Your earlier prediction is saved with this sample.' : 'The class reveal opened this sample before a prediction was recorded.')
+    : 'Choose an outcome for each of the five samples in your substrate row. Then return to run them.';
   if (record.revealed && record.prediction && !prediction.selectedOptions[0]?.hasAttribute('data-legacy')) {
     const outcome = {none: 'No enzymatic cleavage', more: 'Internal backbone cleavage',
       limited: 'Internal backbone cleavage', debranch: 'Branch-point cleavage'}[r.extent];
@@ -95,16 +131,48 @@ function renderBench() {
   $('observation').disabled = !record.revealed;
   $('run-sample').disabled = record.revealed;
   $('run-sample').textContent = record.revealed ? 'Result revealed' : 'Run virtual sample';
+  updateNextStep();
   $('structure-after').disabled = !record.revealed;
   if (record.revealed) {
     const colour = r.iodine.colour;
     $('iodine-readout').innerHTML = `<div class="iodine-result"><svg viewBox="0 0 100 150" role="img" aria-label="${esc(r.iodine.name)}"><path d="M25 15 L25 115 Q25 140 50 140 Q75 140 75 115 L75 15" fill="#f8fafb" stroke="#8aa5ac" stroke-width="2"/><path d="M28 55 L28 115 Q28 137 50 137 Q72 137 72 115 L72 55Z" fill="#f6f7fb"/><path d="M28 55 L28 115 Q28 137 50 137 Q72 137 72 115 L72 55Z" fill="${colour}" opacity="${r.iodine.strength}"/><ellipse cx="50" cy="55" rx="22" ry="5" fill="${colour}" opacity="${r.iodine.strength}"/><path d="M22 15H78" stroke="#8aa5ac" stroke-width="3"/><path d="M34 64V111" stroke="white" stroke-opacity=".45" stroke-width="4" stroke-linecap="round"/></svg><div><h4>${esc(r.iodine.name)}</h4><p>${esc(r.iodine.note)}</p><p class="small">Illustrative bulk iodine colour; no absorbance or concentration scale.</p></div></div>`;
-    $('mechanism').innerHTML = `<p><strong>${esc(r.outcome)}</strong></p><p>${esc(r.explanation)}</p><p class="small">Heat/accessibility assumption: ${esc(r.substrateInfo.heat)}</p>`;
+    $('mechanism').innerHTML = `<p><strong>${esc(r.outcome)}</strong></p><p class="small">${esc(r.substrateInfo.heat)}</p>`;
+    if (!record.prediction || prediction.selectedOptions[0]?.hasAttribute('data-legacy')) {
+      const explanation = document.createElement('p');
+      explanation.textContent = r.explanation;
+      $('mechanism').append(explanation);
+    }
+    showMatchedComparison(r);
   } else {
     $('iodine-readout').innerHTML = '<div class="placeholder">Record a prediction and run this sample to reveal the iodine readout.</div>';
     $('mechanism').innerHTML = '<p class="small">Start with the structure below. Which linkages are targets for this treatment?</p>';
   }
   renderMolecule();
+}
+function showMatchedComparison(result) {
+  const targets = {
+    'control-native': 'saliva-native',
+    'control-heated': 'control-native',
+    'saliva-native': 'control-native',
+    'saliva-heated': 'control-heated',
+    'iso-heated': 'control-heated'
+  };
+  const target = M.samples.find(s => s.substrate === result.substrate && s.treatment === targets[result.treatment]);
+  const other = M.result(target.id);
+  const heatComparison = result.treatment === 'control-heated';
+  const text = document.createElement('p');
+  text.textContent = heatComparison
+    ? `Compare samples ${result.id} and ${other.id} to isolate heat pretreatment. Both contain Tris.`
+    : `Compare samples ${result.id} and ${other.id} to isolate enzyme action. The substrate and pretreatment match.`;
+  if (state.records[other.id].revealed) {
+    text.textContent += ` Sample ${other.id} (${other.treatmentInfo.short}): ${other.iodine.name.toLowerCase()}. ${other.outcome}`;
+  }
+  const open = document.createElement('button');
+  open.type = 'button';
+  open.className = 'secondary';
+  open.textContent = `Open sample ${other.id} · ${other.treatmentInfo.short}`;
+  open.addEventListener('click', () => selectSample(other.id));
+  $('mechanism').append(text, open);
 }
 function renderMolecule() {
   const graph = M.molecule(state.selected, after && state.records[state.selected].revealed);
@@ -134,7 +202,7 @@ function renderPlate() {
   const iodine = state.detector === 'iodine';
   let svg = `<svg viewBox="0 0 ${width} 445" role="img" aria-label="Simulated TLC, ${iodine ? 'iodine vapour' : 'sugar staining'}, samples ${rows.map(s => s.id).join(', ')}. Text description is available below."><rect width="${width}" height="445" fill="${iodine ? '#fbf5e7' : '#f5f7fb'}"/><text x="24" y="28" font-size="15" fill="#334c5a">${iodine ? 'IODINE VAPOUR' : 'SUGAR STAINING / CHARRING'} · SIMULATED</text><path d="M45 70H${width - 145}" stroke="#95a8b5" stroke-dasharray="6 5"/><text x="${width - 135}" y="75" font-size="12" fill="#546975">Solvent front</text><path d="M45 350H${width - 145}" stroke="#7a8f9d"/><text x="${width - 135}" y="355" font-size="12" fill="#546975">Origin</text>`;
   M.standards.forEach(s => {
-    svg += `<path d="M45 ${y(s.rf)}H${width - 145}" stroke="#cbd6df" stroke-dasharray="2 6"/><text x="${width - 135}" y="${y(s.rf) + 4}" font-size="12" fill="#536977">DP${s.dp} · Rf ${s.rf.toFixed(2)}</text>`;
+    svg += `<path d="M45 ${y(s.rf)}H${width - 145}" stroke="#cbd6df" stroke-dasharray="2 6"/><text x="${width - 135}" y="${y(s.rf) - 2}" font-size="12" fill="#334c5a">${esc(s.name)} · DP${s.dp}</text><text x="${width - 135}" y="${y(s.rf) + 12}" font-size="11" fill="#536977">Rf ${s.rf.toFixed(2)}</text>`;
   });
   lanes.forEach((s, i) => {
     const cx = x(i);
@@ -169,13 +237,13 @@ function renderResults() {
     const r = M.result(s.id), record = state.records[s.id];
     return `<tr><td><span class="print-sample">Sample ${s.id}</span><button class="secondary" data-edit="${s.id}">Sample ${s.id}</button><p>${esc(r.substrateInfo.short)}<br>${esc(r.treatmentInfo.name)}</p></td><td>${esc(record.prediction || (record.revealed ? 'No prediction recorded before reveal.' : 'Not yet recorded.'))}</td><td>${record.revealed ? `${esc(r.iodine.name)}. ${esc(r.outcome)}${record.source === 'class' ? '<br><em>Revealed for class comparison.</em>' : ''}` : 'Not revealed.'}</td><td>${esc(record.observation || '—')}</td></tr>`;
   }).join('');
-  $('results-body').querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => selectSample(b.dataset.edit, true)));
+  $('results-body').querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => selectSample(b.dataset.edit)));
 }
 function render() { renderMatrix(); renderBench(); renderPlate(); renderResults(); }
 $('prediction').addEventListener('input', () => {
   if (state.records[state.selected].revealed) return;
   state.records[state.selected].prediction = $('prediction').value;
-  $('prediction').setCustomValidity(''); save(); renderMatrix(); renderResults();
+  $('prediction').setCustomValidity(''); save(); renderMatrix(); renderResults(); updateNextStep();
 });
 $('observation').addEventListener('input', () => { state.records[state.selected].observation = $('observation').value; save(); renderResults(); });
 $('run-sample').addEventListener('click', () => {
@@ -217,6 +285,12 @@ function report() {
   }
   writtenSection('lectures', '09:00–10:45 — LECTURE NOTES');
   writtenSection('theory', '11:00–12:00 — THEORETICAL EXERCISE');
+  for (const [key, value] of Object.entries(state.answers)) {
+    if (key === 'theory-6' || key.startsWith('theory-6-')) {
+      const part = key.split('-')[2] || '';
+      lines.push('Earlier TLC preparation · Q6' + part, value, '');
+    }
+  }
   writtenSection('industry', '13:00–13:45 — STARCH AND BREWING');
   lines.push('14:00–15:45 — VIRTUAL STARCH LAB', '',
     'PROVENANCE: LabManual_2023-2024_Danish.docx, Section A. All displayed results are authored, qualitative teaching scenarios, not experimental measurements. Colours, Rf values and darkness are illustrative; no quantitative yields can be inferred.',

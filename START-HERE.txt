@@ -12,7 +12,8 @@ One page contains the whole day:
 14:00–15:45 Virtual starch-degradation lab — Marek
 16:00–17:00 Exam-style assignment — Marek
 
-Questions, figures, answer discussions and the lab are inline in index.html.
+Work through five morning question groups. At 14:00, open the virtual lab
+for the sample matrix, predictions, simulated results and TLC reading guide.
 Download day notebook exports answers from all sessions in order.
 There is no submission server. Ask your instructor for the answer password.
 
