@@ -11,7 +11,7 @@ Sources from the supplied `theoretical exercise` folder:
 - `theoretical_exercise_slides_for-class_v1.pptx`: checked for coverage against the student and answer versions.
 - `theoretical_exercise_v2_with-answers-for-absalon.docx`: question wording and explanations, including the historical mutant question.
 
-The source structure figures and seedling photos are reproduced from the supplied slides. Their original external provenance is not specified in those slides. The source worksheet credits [Microbe Notes](https://microbenotes.com/thin-layer-chromatography/) for the TLC schematic. The two pathway maps are redrawn as accessible reaction cards with enzyme-entry slots; they preserve the reactions and the DPE1/DPE2 questions.
+The source structure figures and seedling photos are reproduced from the supplied slides. Their original external provenance is not specified in those slides. The source worksheet credits [Microbe Notes](https://microbenotes.com/thin-layer-chromatography/) for the TLC schematic. Figures 1 and 2 reproduce the instructor-supplied synthesis and degradation diagrams. Numbered overlays link each red box to its corresponding reaction card.
 
 All six questions appear inline, including the four parts of the seedling question and the four parts of the TLC question. Answer discussions are folded by default. No PowerPoint application or source-file download is needed to complete the exercise.
 

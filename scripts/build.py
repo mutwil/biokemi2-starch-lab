@@ -10,6 +10,7 @@ SITE = ROOT / '_site'
 PUBLIC = (
     'index.html', 'workshop.css', 'workshop.js', 'workshop-model.js',
     'instructor.html', 'simulation.html', 'EXERCISE.md', 'START-HERE.txt', 'SOURCES.md',
+    'assets/starch-synthesis.png', 'assets/starch-degradation.png',
     'assets/structure-a.png', 'assets/structure-b.png',
     'assets/seedling-left.png', 'assets/seedling-right.png', 'assets/tlc-principle.png',
     'materials/exam-questions-da.pdf', 'materials/exam-original-answers-da.pdf',
