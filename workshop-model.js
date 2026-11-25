@@ -36,7 +36,9 @@
       note: 'Long iodine-binding stretches remain. Accessibility also affects the signal.' };
     let bands = [band(.025, .95, 'origin', .85)];
     let outcome = 'Polymer remains; no enzyme-dependent hydrolysis in this control.';
-    let explanation = 'Tris controls distinguish enzyme action from pretreatment and background. Heating can change accessibility without cleaving glycosidic bonds.';
+    let explanation = t.heated
+      ? 'This sample contains Tris buffer without added enzyme. The heat pretreatment can change chain accessibility while leaving the glycosidic bonds intact.'
+      : 'This sample contains substrate and Tris buffer without added enzyme. It provides the baseline for detecting enzyme-dependent cleavage.';
     let extent = 'none';
     if (t.enzyme === 'alpha') {
       const accessible = key === 'glycogen' || (key === 'potato' && t.heated);
@@ -60,7 +62,9 @@
         name: key === 'glycogen' ? 'Weak brown / amber complex' : 'Blue / violet signal retained',
         note: 'Debranching releases linear chains of different lengths. Long chains can still bind iodine; debranching need not erase the colour.' };
       outcome = 'Debranched chains: mostly low-mobility material, with a distribution of chain lengths.';
-      explanation = 'Isoamylase hydrolyses α(1→6) branch linkages, releasing linear chains. It does not hydrolyse their α(1→4) backbones. Amylose in potato starch remains alongside the debranched amylopectin chains.';
+      explanation = key === 'glycogen'
+        ? 'Isoamylase hydrolyses the α(1→6) junctions in glycogen. The released linear chains retain their α(1→4) linkages.'
+        : 'Isoamylase hydrolyses the α(1→6) junctions in amylopectin. The released linear chains and the amylose already present in potato starch can still bind iodine if they are sufficiently long.';
     } else if (t.enzyme === 'iso') {
       outcome = 'No change from the heated control in the idealized unbranched substrate.';
       explanation = 'An unbranched α(1→4) chain has no α(1→6) target for isoamylase. Small effects in a real amylose-rich preparation could reflect residual branches or impurities.';

@@ -14,7 +14,15 @@ try {
     if (['all', ...M.substrates.map(s => s.id)].includes(saved.plate)) state.plate = saved.plate;
     if (['char', 'iodine'].includes(saved.detector)) state.detector = saved.detector;
     for (const key of answerFields.map(field => field.dataset.save)) {
-      if (typeof saved.answers?.[key] === 'string') state.answers[key] = saved.answers[key];
+      const value = saved.answers?.[key];
+      if (typeof value !== 'string') continue;
+      if (key.startsWith('theory-4-') && value === 'ISA1 / ISA2 complex') {
+        state.answers[key] = 'Isoamylase / pullulanase-type debrancher';
+      } else if (key === 'theory-6-b-mcq' && value === 'Each substrate receives Tris or saliva with and without heat pretreatment, plus heated isoamylase treatment.') {
+        state.answers[key] = 'Tris and saliva are each tested with untreated and preheated substrate. Isoamylase is tested only with preheated substrate.';
+      } else {
+        state.answers[key] = value;
+      }
     }
     for (const s of M.samples) {
       const r = saved.records?.[s.id];
@@ -67,9 +75,22 @@ function renderBench() {
   $('sample-title').textContent = `${r.substrateInfo.name} · ${t.name}`;
   $('sample-description').textContent = r.substrateInfo.structure;
   $('sample-protocol').textContent = `${t.heated ? 'Pretreatment: 60°C, 5 min.' : 'No heat pretreatment.'} 100 µl substrate + 100 µl ${t.enzyme === 'none' ? 'Tris' : t.enzyme === 'alpha' ? 'diluted saliva' : 'isoamylase'}. Incubation: 37°C, 30 min; then ice.`;
-  $('prediction').value = record.prediction;
-  $('prediction').readOnly = record.revealed;
+  const prediction = $('prediction');
+  prediction.querySelector('[data-legacy]')?.remove();
+  if (record.prediction && ![...prediction.options].some(option => option.value === record.prediction)) {
+    const old = new Option(record.prediction, record.prediction);
+    old.dataset.legacy = '';
+    prediction.add(old);
+  }
+  prediction.value = record.prediction;
+  prediction.disabled = record.revealed;
   $('prediction-note').textContent = record.revealed ? 'Prediction locked at reveal. Record any revision in your interpretation below.' : 'Switch samples to prepare all five predictions before running the reactions.';
+  if (record.revealed && record.prediction && !prediction.selectedOptions[0]?.hasAttribute('data-legacy')) {
+    const outcome = {none: 'No enzymatic cleavage', more: 'Internal backbone cleavage',
+      limited: 'Internal backbone cleavage', debranch: 'Branch-point cleavage'}[r.extent];
+    const verdict = record.prediction === outcome ? 'Correct.' : 'The expected outcome is ' + outcome.toLowerCase() + '.';
+    $('prediction-note').textContent = verdict + ' ' + r.explanation;
+  }
   $('observation').value = record.observation;
   $('observation').disabled = !record.revealed;
   $('run-sample').disabled = record.revealed;
@@ -209,7 +230,8 @@ function report() {
     lines.push(`Your interpretation: ${record.observation || '(not recorded)'}`, '');
   }
   const prompts = { 'tlc-answer': 'TLC assignments and uncertainty', 'iodine-answer': 'Iodine versus sugar staining', controls: 'Controls and heat treatment', conclusion: 'Conclusion', transfer: 'Transfer to brewing / resistant starch' };
-  Object.entries(prompts).forEach(([key, title]) => lines.push(title.toUpperCase(), state.answers[key] || '(not recorded)', ''));
+  Object.entries(prompts).filter(([key]) => state.answers[key]).forEach(([key, title]) => lines.push(title.toUpperCase(), state.answers[key] || '(not recorded)', ''));
+  writtenSection('lab', 'VIRTUAL LAB — INTERPRETATION QUESTIONS');
   writtenSection('exam', '16:00–17:00 — EXAM-STYLE ASSIGNMENT');
   lines.push('Exam context: the source assignment gives β-amylolytic limits of approximately 46% for potato starch and 43% for maize starch. These are supplied question values, not outputs of the virtual lab.', 'Sources: theoretical exercise slides and worksheet; LabManual_2023-2024_Danish.docx Section A; eksamenslignende opgave uge 49.pdf and supplied answer materials. See SOURCES.md in the workbook repository.');
   return lines.join('\n');
@@ -246,20 +268,47 @@ const selectionChecks = {
   'theory-3-dpe1': [breakdown, 'Follow the maltotriose left after amylase action. What stage of starch turnover supplies it?'],
   'theory-3-dpe2': [breakdown, 'Trace the source of the maltose that reaches this enzyme in the cytosol.'],
   'theory-3-gbss': [synthesis, 'Does transferring glucose from ADP-glucose onto amylose lengthen or shorten the chain?'],
-  'theory-3-isa': [synthesis, 'Focus on the named ISA1/ISA2 complex. What does trimming misplaced branches accomplish in a developing granule?'],
-  'theory-3-pul': [[breakdown, 'Context dependent'], 'Think about how removing a branch affects access to a limit dextrin in a leaf.'],
+  'theory-3-isa': ['Context dependent', 'Consider what removing branches does when a starch granule is forming and when stored starch is being broken down.'],
+  'theory-3-pul': ['Context dependent', 'Removing branches helps break down limit dextrins. What does the same reaction do to growing amylopectin in the synthesis diagram?'],
   'theory-3-sbe': [synthesis, 'Does this reaction create an α(1→6) branch point or remove one?'],
   'theory-3-sss': [synthesis, 'Trace a glucose unit from ADP-glucose to the end of an amylopectin chain.'],
   'theory-4-s1': ['AGPase', 'Look at the product before any glucan chain appears. Which enzyme activates glucose 1-phosphate using ATP?'],
   'theory-4-s2': ['Starch synthases (SSS / GBSS)', 'Compare the chains above and below this box. One glucose from ADP-glucose has joined the chain.'],
   'theory-4-s3': ['SBE', 'Look for the new α(1→6) attachment in the product. Which activity creates it?'],
-  'theory-4-s4': ['ISA1 / ISA2 complex', 'Follow the branch that is trimmed as amylopectin becomes ordered in the growing granule.'],
+  'theory-4-s4': ['Isoamylase / pullulanase-type debrancher', 'Follow the branch that is trimmed as amylopectin becomes ordered in the growing granule.'],
   'theory-4-d1': ['Isoamylase / pullulanase-type debrancher', 'The released chain remains intact. Which linkage held it to the parent glucan?'],
   'theory-4-d2': ['α-Amylase', 'The cut occurs inside an α(1→4) chain. Look for an enzyme that can act away from a chain end.'],
   'theory-4-d3': ['β-Amylase', 'The arrow starts at a nonreducing end and releases two glucose residues together as maltose.'],
   'theory-4-d4': ['DPE1', 'Count the residues on both sides. Two three-residue chains become a five-residue chain and one glucose. Which transfer uses maltotriose?'],
   'theory-4-d5': ['DPE2', 'Here the donor is maltose. One glucose joins an acceptor glucan and the other is released.']
 };
+
+const explanations = {
+  'glucan-pair': 'A shows a linear glucose chain. The side chain attached through C6 in B identifies amylopectin.',
+  'theory-3-agpase': 'AGPase produces ADP-glucose, the activated donor used to build starch.',
+  'theory-3-alpha': 'α-Amylase hydrolyses internal α(1→4) bonds, yielding shorter glucans.',
+  'theory-3-beta': 'β-Amylase releases maltose from nonreducing chain ends until it encounters a barrier.',
+  'theory-3-dpe1': 'In the chloroplast, DPE1 redistributes residues from maltotriose produced during starch breakdown.',
+  'theory-3-dpe2': 'Cytosolic DPE2 uses maltose exported during starch breakdown and transfers a glucosyl unit to an acceptor.',
+  'theory-3-gbss': 'Granule-bound starch synthase extends amylose with glucose from ADP-glucose.',
+  'theory-3-isa': 'Isoamylases trim branches during amylopectin assembly and remove branches during starch mobilization.',
+  'theory-3-pul': 'Pullulanase can trim branch points as amylopectin forms and remove branches from limit dextrins during starch breakdown.',
+  'theory-3-sbe': 'Starch branching enzyme transfers a chain segment to form a new α(1→6) junction.',
+  'theory-3-sss': 'Soluble starch synthases use ADP-glucose to elongate the chains of amylopectin.',
+  'theory-4-s1': 'AGPase uses ATP to convert glucose 1-phosphate to ADP-glucose and pyrophosphate.',
+  'theory-4-s2': 'Soluble starch synthases use ADP-glucose to extend the amylopectin chains shown here. Granule-bound starch synthase extends amylose.',
+  'theory-4-s3': 'SBE transfers an existing chain segment to C6, creating the branch shown in the product.',
+  'theory-4-s4': 'Isoamylase and pullulanase trim α(1→6) branches on growing amylopectin. The remaining chains can pack into ordered regions of the starch granule.',
+  'theory-4-d1': 'Debranching hydrolyses the α(1→6) junction and releases the attached chain intact.',
+  'theory-4-d2': 'α-Amylase cuts internal α(1→4) bonds and produces shorter oligosaccharides.',
+  'theory-4-d3': 'β-Amylase removes two glucose residues together as maltose from a nonreducing end.',
+  'theory-4-d4': 'DPE1 transfers two residues between maltotriose molecules, yielding maltopentaose and glucose.',
+  'theory-4-d5': 'DPE2 transfers one glucosyl unit from maltose to an acceptor and releases the other as glucose.'
+};
+
+const mapReactions = new Map(Object.entries(selectionChecks)
+  .filter(([id]) => id.startsWith('theory-4-'))
+  .map(([id, [enzyme]]) => [enzyme, explanations[id]]));
 
 for (const exercise of document.querySelectorAll('.selection-exercise')) {
   const summary = exercise.querySelector('.check-summary');
@@ -285,20 +334,21 @@ for (const exercise of document.querySelectorAll('.selection-exercise')) {
     let missing = 0;
     for (const {field, note} of items) {
       const id = field.dataset.save;
-      const [accepted, hint] = selectionChecks[id];
-      const choice = field.matches('fieldset') ? field.querySelector(':checked')?.value : field.value;
+      const selected = field.querySelector(':checked');
+      const choice = field.matches('fieldset') ? selected?.value : field.value;
+      const [accepted, hint] = selectionChecks[id] || [];
+      const feedback = selected?.dataset.feedback;
       if (!choice) {
         missing++;
         note.textContent = 'Choose an answer first.';
         note.dataset.result = 'empty';
-      } else if ([].concat(accepted).includes(choice)) {
+      } else if (selected?.hasAttribute('data-correct') || [].concat(accepted).includes(choice)) {
         correct++;
-        note.textContent = id === 'theory-3-pul' && choice === 'Context dependent'
-          ? 'Accepted. In your explanation, describe how a leaf debranching enzyme helps mobilize starch.'
-          : 'Correct.';
+        note.textContent = 'Correct. ' + (feedback || explanations[id]);
         note.dataset.result = 'correct';
       } else {
-        note.textContent = 'Try again. ' + hint;
+        const reaction = id.startsWith('theory-4-') && mapReactions.get(choice);
+        note.textContent = 'Try again. ' + (feedback || [reaction, hint].filter(Boolean).join(' '));
         note.dataset.result = 'retry';
       }
     }

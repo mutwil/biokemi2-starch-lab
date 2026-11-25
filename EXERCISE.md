@@ -22,12 +22,7 @@ Inspect the three substrate descriptions and the protocol in the lab. All reacti
 
 Your instructor assigns one substrate. Select each of its five numbered samples in the matrix and record a prediction before revealing any result.
 
-For each prediction, specify:
-
-- Which linkages can be cleaved, if any.
-- How accessibility could limit the reaction.
-- What you expect from iodine staining and TLC.
-- The sample number of the control or comparison that tests your explanation.
+Choose the expected cleavage pattern for each sample. After reveal, compare the feedback with the iodine and TLC results. Use the observation field for your own notes.
 
 | Substrate | Tris, untreated | Tris, heated | Saliva, untreated | Saliva, heated | Isoamylase, heated |
 |---|---:|---:|---:|---:|---:|
@@ -54,13 +49,7 @@ Choose your substrate in the TLC panel. Inspect the plate using both iodine vapo
 
 The mixed standards contain glucose (DP1), maltose (DP2), maltotetraose (DP4) and maltoheptaose (DP7). DP means degree of polymerization. The displayed Rf positions are illustrative, not measurements from the manual.
 
-Answer in the notebook:
-
-1. Which bands co-migrate with standards? Give the sample numbers and your provisional assignments.
-2. Which bands cannot be confidently identified? What additional standard or analysis would help?
-3. What remains near the origin, and why is a unique DP assignment inappropriate there?
-4. Which products appear after sugar staining but are not detected with iodine?
-5. Does loss of blue iodine colour establish complete conversion to glucose? Explain using both readouts.
+Complete the TLC and iodine multiple-choice questions in the workbook. Use the reference lanes and both detection methods to evaluate each option, then check the feedback.
 
 ## 5. Compare substrates · 15 minutes
 
@@ -76,12 +65,7 @@ Use numbered comparisons to discuss:
 
 ## 6. Submit your interpretation · 10 minutes
 
-Complete the automatically assembled results table and write a conclusion of about 150 words. Include:
-
-- A mechanistic claim connecting structure, specificity and accessibility.
-- Two supporting comparisons using sample numbers.
-- Evidence from both iodine and TLC.
-- One consequential limitation and one follow-up experiment.
+Review the assembled results table, then complete the multiple-choice questions on controls, the conclusion and transfer to brewing. Use the feedback to revisit the sample comparisons.
 
 Download the lab notebook or use **Print / save PDF**, then submit through the course channel specified by your instructor. GitHub does not collect your answers.
 
