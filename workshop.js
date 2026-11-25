@@ -39,6 +39,8 @@ function restoreAnswer(input, value) {
 }
 answerFields.forEach(input => {
   restoreAnswer(input, state.answers[input.dataset.save] || '');
+  const oldResponse = input.closest('[data-legacy-response]');
+  if (oldResponse) oldResponse.hidden = !input.value;
   input.addEventListener('input', event => { state.answers[input.dataset.save] = event.target.value; save(); });
 });
 function selectSample(id, focus = false) {
@@ -188,6 +190,7 @@ function report() {
   function writtenSection(section, title) {
     lines.push(title, '');
     answerFields.filter(field => field.dataset.section === section).forEach(field => {
+      if (field.closest('[data-legacy-response]') && !field.value) return;
       lines.push(field.dataset.prompt || field.dataset.save, answerText(field) || '(not recorded)', '');
     });
   }
@@ -226,6 +229,7 @@ $('reset').addEventListener('click', () => {
   if (!window.confirm('Clear ALL workbook answers, including lecture notes, theory, lab predictions and exam answers? Download your day notebook first.')) return;
   state = blank(); after = false;
   answerFields.forEach(input => restoreAnswer(input, ''));
+  document.querySelectorAll('[data-legacy-response]').forEach(label => label.hidden = true);
   document.querySelectorAll('.selection-feedback, .check-summary').forEach(note => note.textContent = '');
   $('run-message').textContent = ''; save(); render();
 });

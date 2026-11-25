@@ -41,3 +41,7 @@
 .selection-feedback[data-result=retry] { color: #843a24; }
 .selection-feedback[data-result=correct] { color: #176344; }
 @media print { .check-controls, .selection-feedback { display: none; } }
+
+.answer-parts > li { margin: .55rem 0; }
+.answer-parts > li::marker { font-weight: 700; }
+label[data-legacy-response][hidden] { display: none; }
