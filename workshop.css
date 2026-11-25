@@ -33,3 +33,11 @@
 .key-form label { margin: 0; }
 .key-form [role=status] { flex-basis: 100%; }
 @media print { .key-form { display: none; } }
+
+.check-controls { margin: .75rem 0 1.25rem; }
+.check-summary { margin-left: .6rem; font-weight: 650; }
+.selection-feedback { font-size: .95rem; margin: .4rem 0; }
+.selection-feedback:empty { display: none; }
+.selection-feedback[data-result=retry] { color: #843a24; }
+.selection-feedback[data-result=correct] { color: #176344; }
+@media print { .check-controls, .selection-feedback { display: none; } }

@@ -226,6 +226,79 @@ $('reset').addEventListener('click', () => {
   if (!window.confirm('Clear ALL workbook answers, including lecture notes, theory, lab predictions and exam answers? Download your day notebook first.')) return;
   state = blank(); after = false;
   answerFields.forEach(input => restoreAnswer(input, ''));
+  document.querySelectorAll('.selection-feedback, .check-summary').forEach(note => note.textContent = '');
   $('run-message').textContent = ''; save(); render();
 });
 render(); save();
+
+// Each hint points students to the observation that distinguishes the choices.
+const synthesis = 'Synthesis';
+const breakdown = 'Breakdown / product metabolism';
+const selectionChecks = {
+  'glucan-pair': ['A: amylose, B: amylopectin', 'Trace each chain from its reducing end. Which figure has a side chain attached through carbon 6?'],
+  'theory-3-agpase': [synthesis, 'Follow the ADP-glucose made by this enzyme. What uses it as a glucose donor?'],
+  'theory-3-alpha': [breakdown, 'Trace what happens to chain length when an internal α(1→4) bond is hydrolysed.'],
+  'theory-3-beta': [breakdown, 'Consider where the maltose comes from when this enzyme acts at a nonreducing end.'],
+  'theory-3-dpe1': [breakdown, 'Follow the maltotriose left after amylase action. What stage of starch turnover supplies it?'],
+  'theory-3-dpe2': [breakdown, 'Trace the source of the maltose that reaches this enzyme in the cytosol.'],
+  'theory-3-gbss': [synthesis, 'Does transferring glucose from ADP-glucose onto amylose lengthen or shorten the chain?'],
+  'theory-3-isa': [synthesis, 'Focus on the named ISA1/ISA2 complex. What does trimming misplaced branches accomplish in a developing granule?'],
+  'theory-3-pul': [[breakdown, 'Context dependent'], 'Think about how removing a branch affects access to a limit dextrin in a leaf.'],
+  'theory-3-sbe': [synthesis, 'Does this reaction create an α(1→6) branch point or remove one?'],
+  'theory-3-sss': [synthesis, 'Trace a glucose unit from ADP-glucose to the end of an amylopectin chain.'],
+  'theory-4-s1': ['AGPase', 'Look at the product before any glucan chain appears. Which enzyme activates glucose 1-phosphate using ATP?'],
+  'theory-4-s2': ['Starch synthases (SSS / GBSS)', 'Compare the chains above and below this box. One glucose from ADP-glucose has joined the chain.'],
+  'theory-4-s3': ['SBE', 'Look for the new α(1→6) attachment in the product. Which activity creates it?'],
+  'theory-4-s4': ['ISA1 / ISA2 complex', 'Follow the branch that is trimmed as amylopectin becomes ordered in the growing granule.'],
+  'theory-4-d1': ['Isoamylase / pullulanase-type debrancher', 'The released chain remains intact. Which linkage held it to the parent glucan?'],
+  'theory-4-d2': ['α-Amylase', 'The cut occurs inside an α(1→4) chain. Look for an enzyme that can act away from a chain end.'],
+  'theory-4-d3': ['β-Amylase', 'The arrow starts at a nonreducing end and releases two glucose residues together as maltose.'],
+  'theory-4-d4': ['DPE1', 'Count the residues on both sides. Two three-residue chains become a five-residue chain and one glucose. Which transfer uses maltotriose?'],
+  'theory-4-d5': ['DPE2', 'Here the donor is maltose. One glucose joins an acceptor glucan and the other is released.']
+};
+
+for (const exercise of document.querySelectorAll('.selection-exercise')) {
+  const summary = exercise.querySelector('.check-summary');
+  const fields = [...exercise.querySelectorAll('[data-save]')];
+  const items = fields.map(field => {
+    const note = document.createElement('p');
+    note.className = 'selection-feedback';
+    note.id = 'feedback-' + field.dataset.save;
+    const anchor = field.closest('.reaction-step label') || field;
+    anchor.after(note);
+    field.setAttribute('aria-describedby', note.id);
+    function clear() {
+      note.textContent = '';
+      delete note.dataset.result;
+      summary.textContent = '';
+    }
+    field.addEventListener('input', clear);
+    return {field, note};
+  });
+  exercise.querySelector('.check-controls').hidden = false;
+  exercise.querySelector('button').addEventListener('click', () => {
+    let correct = 0;
+    let missing = 0;
+    for (const {field, note} of items) {
+      const id = field.dataset.save;
+      const [accepted, hint] = selectionChecks[id];
+      const choice = field.matches('fieldset') ? field.querySelector(':checked')?.value : field.value;
+      if (!choice) {
+        missing++;
+        note.textContent = 'Choose an answer first.';
+        note.dataset.result = 'empty';
+      } else if ([].concat(accepted).includes(choice)) {
+        correct++;
+        note.textContent = id === 'theory-3-pul' && choice === 'Context dependent'
+          ? 'Accepted. In your explanation, describe how a leaf debranching enzyme helps mobilize starch.'
+          : 'Correct.';
+        note.dataset.result = 'correct';
+      } else {
+        note.textContent = 'Try again. ' + hint;
+        note.dataset.result = 'retry';
+      }
+    }
+    summary.textContent = correct + ' of ' + items.length + ' correct.' +
+      (missing ? ' Unanswered: ' + missing + '.' : '');
+  });
+}
