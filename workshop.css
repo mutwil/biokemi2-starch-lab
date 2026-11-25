@@ -25,3 +25,11 @@
   .pathway-figure figcaption a { display: none; }
   .pathway-marker { text-decoration: none; }
 }
+
+.question fieldset { margin: 1rem 0; padding: 1rem; border: 1px solid var(--line); }
+.question fieldset label { display: flex; align-items: center; gap: .6rem; }
+.question input[type=radio] { width: auto; margin: 0; }
+.key-form { display: flex; flex-wrap: wrap; gap: .75rem; align-items: end; padding: 1rem 0; }
+.key-form label { margin: 0; }
+.key-form [role=status] { flex-basis: 100%; }
+@media print { .key-form { display: none; } }

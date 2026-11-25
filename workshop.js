@@ -28,9 +28,18 @@ function save() {
   try { localStorage.setItem(KEY, JSON.stringify(state)); $('save-status').textContent = 'Saved in this browser only. Download your notebook before leaving.'; }
   catch (_) { $('save-status').textContent = 'Browser storage is unavailable. Keep this tab open and download your notebook to retain your answers.'; }
 }
+function restoreAnswer(input, value) {
+  if (input.tagName === 'FIELDSET') {
+    for (const radio of input.querySelectorAll('input[type=radio]')) {
+      radio.checked = radio.value === value;
+    }
+  } else {
+    input.value = value;
+  }
+}
 answerFields.forEach(input => {
-  input.value = state.answers[input.dataset.save] || '';
-  input.addEventListener('input', () => { state.answers[input.dataset.save] = input.value; save(); });
+  restoreAnswer(input, state.answers[input.dataset.save] || '');
+  input.addEventListener('input', event => { state.answers[input.dataset.save] = event.target.value; save(); });
 });
 function selectSample(id, focus = false) {
   state.selected = Number(id); after = false;
@@ -167,6 +176,7 @@ $('reveal-all').addEventListener('click', () => {
   state.plate = 'all'; save(); render();
 });
 function answerText(field) {
+  if (field.tagName === 'FIELDSET') return field.querySelector(':checked')?.value || '';
   if (field.tagName === 'SELECT' && field.value) {
     return field.selectedOptions[0].textContent;
   }
@@ -215,7 +225,7 @@ window.addEventListener('afterprint', () => document.querySelectorAll('.print-an
 $('reset').addEventListener('click', () => {
   if (!window.confirm('Clear ALL workbook answers, including lecture notes, theory, lab predictions and exam answers? Download your day notebook first.')) return;
   state = blank(); after = false;
-  document.querySelectorAll('[data-save]').forEach(input => input.value = '');
+  answerFields.forEach(input => restoreAnswer(input, ''));
   $('run-message').textContent = ''; save(); render();
 });
 render(); save();

@@ -14,7 +14,7 @@ One page contains the whole day:
 
 Questions, figures, answer discussions and the lab are inline in index.html.
 Download day notebook exports answers from all sessions in order.
-There is no submission server. Answer discussions are public.
+There is no submission server. Ask your instructor for the answer password.
 
 Instructor notes: instructor.html
 Afternoon lab worksheet: EXERCISE.md

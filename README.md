@@ -28,7 +28,7 @@ The previously open afternoon slot now contains the virtual lab. Work in groups 
 
 For offline use, download the [complete workbook ZIP](https://mutwil.github.io/biokemi2-starch-lab/data/biokemi2-starch-lab.zip), extract it, and open `index.html`. It includes the figures and optional original Danish exam PDFs. Keep all files and folders together.
 
-Answers are saved only in the current browser when storage is available. **Download your notebook before leaving.** Answer discussions and instructor notes are openly accessible: this is a teaching workbook, not a secure assessment platform.
+Answers are saved only in the current browser when storage is available. **Download your notebook before leaving.** The instructor supplies the password for answer discussions and the instructor guide.
 
 ## Teaching materials
 
@@ -95,7 +95,7 @@ Push to `main` to run the tests, build the site and deploy through GitHub Action
 | `EXERCISE.md` | GitHub-readable afternoon lab worksheet |
 | `SOURCES.md` | Source materials and scientific clarifications |
 | `assets/` | Embedded theoretical-exercise figures |
-| `materials/` | Original Danish exam question and answer PDFs |
+| `materials/` | Original Danish exam question PDF |
 | `instructor.html` | Timetable, answer notes and marking guide |
 | `simulation.html` | Optional enzyme particle sandbox |
 | `workshop.test.js` | Sample numbering, specificity, connectivity and scenario checks |

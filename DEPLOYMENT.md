@@ -20,7 +20,7 @@ python3 -m http.server 8000 --directory _site
 
 Open http://localhost:8000/. Verify the schedule links, theory selections, exam answers, reload persistence, sample reveal, both TLC modes, whole-day notebook export and printing after changing their code. The site works directly from local files too.
 
-The build copies an explicit list of public teaching files into `_site/`, validates local links, and generates the offline ZIP. The allowlist includes selected source figures and two original Danish exam PDFs. Other source files, browser answers, screenshots and local QA outputs are not copied.
+The build copies an explicit list of public teaching files into `_site/`, validates local links, and generates the offline ZIP. The allowlist includes selected source figures and the Danish question PDF and the encrypted answer materials. Other source files, browser answers, screenshots and local QA outputs are not copied.
 
 ## Publish
 
@@ -53,4 +53,4 @@ Pages is configured to use **GitHub Actions**, not a branch directory. If recrea
 
 Do not present the qualitative scenarios as measured results or use their darkness or migration positions for quantitative inference. Archived experimental data would need treatment labels, standards, detection method and provenance before replacing the scenarios.
 
-Instructor answers are public. Student answers stay in browser storage and exported notebooks. Do not add student notebooks to the repository. Course announcements and student communication remain with the instructor.
+The encrypted answer bundle works online and offline. To edit it locally, use python3 scripts/answer_key.py open /private/path/answers.json and then seal in place of open. Both commands prompt for the password. Student answers stay in browser storage and exported notebooks. Do not add student notebooks to the repository. Course announcements and student communication remain with the instructor.
