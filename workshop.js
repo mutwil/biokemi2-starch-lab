@@ -1,18 +1,13 @@
 'use strict';
 const $ = id => document.getElementById(id);
-const modelLauncher = $('starch-model');
-modelLauncher.addEventListener('toggle', () => {
-  if (modelLauncher.open && !modelLauncher.querySelector('iframe')) {
-    modelLauncher.append(modelLauncher.querySelector('template').content.cloneNode(true));
-  }
-});
+const modelFrame = $('starch-model');
 window.addEventListener('message', event => {
-  const frame = modelLauncher.querySelector('iframe');
-  if (frame && event.source === frame.contentWindow && event.data?.type === 'starch-model-height') {
+  if (event.source === modelFrame.contentWindow && event.data?.type === 'starch-model-height') {
     const height = event.data.height;
-    if (Number.isSafeInteger(height) && height > 0) frame.style.height = height + 'px';
+    if (Number.isSafeInteger(height) && height > 0) modelFrame.style.height = height + 'px';
   }
 });
+modelFrame.contentWindow.postMessage({type: 'measure-starch-model'}, '*');
 const M = StarchLab;
 const KEY = 'biokemi2-starch-lab-v2';
 // Keep the storage key so existing lab answers survive the full-day expansion.
@@ -327,8 +322,8 @@ function download() {
   const url = URL.createObjectURL(new Blob([report()], { type: 'text/plain;charset=utf-8' }));
   const a = document.createElement('a'); a.href = url; a.download = 'biokemi2-day-notebook.txt'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
-document.querySelectorAll('#export, #export-bottom, [data-action="export"]').forEach(button => button.addEventListener('click', download));
-document.querySelectorAll('#print, #print-bottom, [data-action="print"]').forEach(button => button.addEventListener('click', () => window.print()));
+document.querySelectorAll('#export-bottom, [data-action="export"]').forEach(button => button.addEventListener('click', download));
+document.querySelectorAll('#print-bottom, [data-action="print"]').forEach(button => button.addEventListener('click', () => window.print()));
 window.addEventListener('beforeprint', () => {
   document.querySelectorAll('.print-answer').forEach(el => el.remove());
   document.querySelectorAll('textarea, select[data-save]').forEach(input => { const text = document.createElement('div'); text.className = 'print-answer'; text.textContent = answerText(input) || 'Answer: __________________________________________________________'; input.after(text); });

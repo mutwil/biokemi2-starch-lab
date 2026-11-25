@@ -50,13 +50,12 @@ label[data-legacy-response][hidden] { display: none; }
   #sample-number, #tlc { scroll-margin-top: 5rem; }
 }
 
-.model-launcher {
-  margin: 1.25rem 0;
-  padding: 1rem 1.25rem;
-  background: white;
-  border: 1px solid var(--line);
-  border-radius: 12px;
+#starch-model {
+  display: block;
+  width: 100%;
+  height: 540px;
+  margin-top: 1.5rem;
+  border: 0;
+  border-radius: 14px;
 }
-.model-launcher summary { cursor: pointer; font-size: 1.15rem; font-weight: 700; }
-.model-launcher iframe { display: block; width: 100%; height: 75vh; border: 0; border-radius: 8px; }
-@media print { .model-launcher { display: none; } }
+@media print { #starch-model { display: none; } }

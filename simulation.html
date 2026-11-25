@@ -55,6 +55,16 @@
       .key { display:inline-block; font-size:.72rem; color:var(--cyan); margin-bottom:8px; letter-spacing:.09em; text-transform:uppercase; }
       @media (max-width:1020px) { .lab { grid-template-columns:250px minmax(0,1fr); } .metrics { grid-column:1/-1; display:grid; grid-template-columns:repeat(4,1fr); gap:12px; } .metrics h2,.buttons { grid-column:1/-1; } .metric { padding:0; border:0; } .buttons { margin-top:0; } }
       @media (max-width:680px) { .shell { width:min(100% - 20px,1380px); padding-top:20px; } header { align-items:flex-start; flex-direction:column; gap:15px; } .lab,.story { grid-template-columns:1fr; } .stage-wrap,canvas { min-height:470px; } .metrics { grid-template-columns:repeat(2,1fr); } }
+      body.embedded { min-height: 0; background: transparent; }
+      .embedded .shell { width: 100%; padding: 0; }
+      .embedded .shell > header, .embedded .story { display: none; }
+      .embedded .stage-wrap { min-height: 430px; }
+      .embedded canvas { position: absolute; inset: 0; min-height: 0; }
+      .embedded .control { margin-bottom: 14px; }
+      .embedded .metric { padding: 8px 0; }
+      @media (max-width:680px) {
+        .embedded .stage-wrap { grid-row: 1; }
+      }
     </style>
   </head>
   <body>
@@ -95,11 +105,16 @@
       const canvas = document.querySelector('#sim'), ctx = canvas.getContext('2d');
       const $ = s => document.querySelector(s);
       if (window.parent !== window) {
+        document.body.classList.add('embedded');
         $('#workbook-return').hidden = true;
         const shell = $('.shell');
-        new ResizeObserver(() => {
+        function reportHeight() {
           window.parent.postMessage({type: 'starch-model-height', height: shell.offsetHeight}, '*');
-        }).observe(shell);
+        }
+        new ResizeObserver(reportHeight).observe(shell);
+        window.addEventListener('message', event => {
+          if (event.source === window.parent && event.data?.type === 'measure-starch-model') reportHeight();
+        });
       }
       const inputs = {amylase:$('#amylase'), betaamylase:$('#betaamylase'), debrancher:$('#debrancher'), substrate:$('#substrate')};
       let W=0,H=0, running=true, last=0, simTime=0, enzymes=[], bonds=[], nodes=[], chains=[], particles=[], ripples=[], total=0, cleaved=0, dextrins=0, glucose=0, debranched=0;
@@ -147,6 +162,7 @@
       Object.entries(inputs).forEach(([id,input])=>input.addEventListener('input',()=>{const min=+input.min,max=+input.max,v=+input.value;input.style.setProperty('--fill',((v-min)/(max-min)*100)+'%');$('#'+id+'Val').textContent=id==='substrate'?v+' %':v+' µM';if(id==='substrate')reset();else refill();}));
       $('#speed').addEventListener('input',e=>{const v=+e.target.value;$('#speedVal').textContent=v.toFixed(v%1===0?1:2)+'×';e.target.style.setProperty('--fill',((v-.25)/3.75*100)+'%');});
       $('#pause').onclick=()=>{running=!running;$('#pause').textContent=running?'Pause':'Resume';$('#statusText').textContent=running?'Simulation running':'Simulation paused';}; $('#reset').onclick=reset;
+      if (window.parent !== window && matchMedia('(prefers-reduced-motion: reduce)').matches) $('#pause').click();
       new ResizeObserver(()=>{resize();reset();}).observe(canvas); resize();reset();requestAnimationFrame(tick);
     </script>
   </body>
