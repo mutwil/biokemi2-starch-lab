@@ -3,3 +3,5 @@ __pycache__/
 .DS_Store
 *-notebook.txt
 *.pdf
+!/materials/exam-questions-da.pdf
+!/materials/exam-original-answers-da.pdf

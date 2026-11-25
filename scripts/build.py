@@ -9,7 +9,10 @@ ROOT = Path(__file__).resolve().parent.parent
 SITE = ROOT / '_site'
 PUBLIC = (
     'index.html', 'workshop.css', 'workshop.js', 'workshop-model.js',
-    'instructor.html', 'simulation.html', 'EXERCISE.md', 'START-HERE.txt',
+    'instructor.html', 'simulation.html', 'EXERCISE.md', 'START-HERE.txt', 'SOURCES.md',
+    'assets/structure-a.png', 'assets/structure-b.png',
+    'assets/seedling-left.png', 'assets/seedling-right.png', 'assets/tlc-principle.png',
+    'materials/exam-questions-da.pdf', 'materials/exam-original-answers-da.pdf',
 )
 
 class Links(HTMLParser):
@@ -30,6 +33,7 @@ if SITE.exists():
     shutil.rmtree(SITE)
 SITE.mkdir()
 for name in PUBLIC:
+    (SITE / name).parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(ROOT / name, SITE / name)
 
 (SITE / 'data').mkdir()
@@ -43,7 +47,7 @@ with zipfile.ZipFile(archive) as package:
         assert package.read(name) == (ROOT / name).read_bytes()
 
 landing = SITE / 'index.html'
-landing.write_text(landing.read_text().replace('<footer>', '<footer><a href="data/biokemi2-starch-lab.zip" download>Download offline exercise</a>'))
+landing.write_text(landing.read_text().replace('<footer>', '<footer><a href="data/biokemi2-starch-lab.zip" download>Download offline day workbook</a>'))
 (SITE / '.nojekyll').write_text('')
 
 for name in PUBLIC:

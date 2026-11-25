@@ -1,21 +1,28 @@
-BIOKEMI 2 — VIRTUAL STARCH LAB
+BIOKEMI 2 — STARCH AND GLYCOGEN DAY WORKBOOK
 
 Extract the entire ZIP and open index.html in a modern browser.
-Keep the HTML, CSS and JavaScript files together.
+Keep all files, assets/ and materials/ together.
 No installation, login, internet connection or server is required.
 
-Student exercise: index.html
-Written worksheet: EXERCISE.md
-Instructor timing and answer notes: instructor.html
-Optional particle sandbox: simulation.html
+One page contains the whole day:
+09:00–09:45 Glycogen lecture — Marek
+10:00–10:45 Starch lecture — Marek
+11:00–12:00 Theoretical exercise and group work — Marek
+13:00–13:45 Starch and brewing — Finn Lok, Carlsberg
+14:00–15:45 Virtual starch-degradation lab — Marek
+16:00–17:00 Exam-style assignment — Marek
 
-The activity adapts Section A of LabManual_2023-2024_Danish.docx into
-14:00–15:45 (105 minutes). It retains all 15 original conditions.
-Iodine and TLC outputs are simulated qualitative teaching examples,
-NOT measured experimental data.
+Questions, figures, answer discussions and the lab are inline in index.html.
+Download day notebook exports answers from all sessions in order.
+There is no submission server. Answer discussions are public.
 
-Download the notebook before leaving. There is no submission server.
-Instructor notes are openly accessible.
+Instructor notes: instructor.html
+Afternoon lab worksheet: EXERCISE.md
+Source and adaptation notes: SOURCES.md
+Optional earlier particle sandbox: simulation.html
 
-Online exercise: https://mutwil.github.io/biokemi2-starch-lab/
+Only the virtual lab's analytical patterns are simulated teaching examples.
+The exam's 46% and 43% limits are given values from the original assignment.
+
+Online: https://mutwil.github.io/biokemi2-starch-lab/
 Source: https://github.com/mutwil/biokemi2-starch-lab

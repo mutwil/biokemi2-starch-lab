@@ -1,31 +1,43 @@
-# Biokemi 2 · Virtual starch lab
+# Biokemi 2 · Starch and glycogen day workbook
 
-**[Open the exercise](https://mutwil.github.io/biokemi2-starch-lab/)** · [Student worksheet](EXERCISE.md) · [Instructor guide](https://mutwil.github.io/biokemi2-starch-lab/instructor.html)
+**[Open the complete day workbook](https://mutwil.github.io/biokemi2-starch-lab/)**
 
-A 105-minute, browser-based exercise for PLEN Biokemi 2, adapted from Section A of the 2023–2024 Danish laboratory manual: *Enzymatisk hydrolyse af glukaner samt analyse af produkter*.
+One self-contained page for the PLEN Biokemi 2 teaching day: the schedule, lecture notes, the theoretical exercise, the brewing talk, the virtual starch lab and the exam-style assignment. Students do not need GitHub accounts, coding tools or PowerPoint.
 
-Students investigate how substrate structure, accessibility and enzyme specificity affect starch and glycogen hydrolysis. No wet lab, coding, installation or GitHub account is required.
+## Day plan
+
+| Time | Session | Teacher / speaker |
+|---|---|---|
+| 09:00–09:45 | Glycogen lecture | Marek |
+| 10:00–10:45 | Starch lecture | Marek |
+| 11:00–12:00 | Theoretical exercise and group work | Marek |
+| 13:00–13:45 | Starch and brewing industry talk | Finn Lok, Carlsberg |
+| 14:00–15:45 | Virtual starch-degradation lab | Marek |
+| 16:00–17:00 | Exam-style assignment | Marek |
+
+The previously open afternoon slot now contains the virtual lab. Work in groups for theory and the lab, and individually for the exam-style assignment.
 
 ## Start here
 
-1. Open the [online lab](https://mutwil.github.io/biokemi2-starch-lab/).
-2. Work in groups of 3–4. Begin with one assigned substrate.
-3. Record predictions for its five treatments, then reveal the samples.
-4. Compare iodine staining, molecular linkage diagrams and TLC.
-5. Reveal the full class dataset, complete the results table and write a short conclusion.
-6. Download your notebook and submit it using your instructor’s normal course channel.
+1. Open the [day workbook](https://mutwil.github.io/biokemi2-starch-lab/), which starts with the schedule.
+2. Follow its links to the relevant session. All six theoretical questions and all four exam-style questions appear inline, with figures and answer fields.
+3. Attempt each exercise before unfolding its answer discussion.
+4. In the virtual lab, record predictions before revealing the 15 sample conditions and comparing iodine and TLC.
+5. Download the **day notebook**. It includes lecture and industry notes, theoretical answers, lab predictions and interpretations, and exam answers in chronological order.
+6. Submit using the instructor’s normal course channel. The website does not collect submissions.
 
-For offline use, download the [exercise ZIP](https://mutwil.github.io/biokemi2-starch-lab/data/biokemi2-starch-lab.zip), extract it, and open `index.html`. Keep all files together.
+For offline use, download the [complete workbook ZIP](https://mutwil.github.io/biokemi2-starch-lab/data/biokemi2-starch-lab.zip), extract it, and open `index.html`. It includes the figures and optional original Danish exam PDFs. Keep all files and folders together.
 
-Answers are saved only in the current browser when browser storage is available. **There is no submission server. Download your notebook before leaving.** Instructor notes are openly accessible; this is a teaching activity, not a secure assessment platform.
+Answers are saved only in the current browser when storage is available. **Download your notebook before leaving.** Answer discussions and instructor notes are openly accessible: this is a teaching workbook, not a secure assessment platform.
 
-## What you will learn
+## Teaching materials
 
-- Separate enzyme specificity from physical substrate accessibility.
-- Distinguish internal α(1→4) cleavage by salivary α-amylase from α(1→6) debranching by isoamylase.
-- Identify reducing and nonreducing ends before and after cleavage.
-- Use matched controls to interpret enzyme and heat-treatment effects.
-- Combine iodine and TLC evidence without equating loss of blue colour with glucose production.
+- [Theoretical exercise](https://mutwil.github.io/biokemi2-starch-lab/#theory): six original question groups, including enzyme classification, pathway completion, seedling images and TLC interpretation.
+- [Virtual lab](https://mutwil.github.io/biokemi2-starch-lab/#brief): the 105-minute in silico adaptation of Section A of the original manual.
+- [Exam-style assignment](https://mutwil.github.io/biokemi2-starch-lab/#exam): four questions about β-amylolytic limits, with the supplied 46% potato and 43% maize values.
+- [Instructor guide](https://mutwil.github.io/biokemi2-starch-lab/instructor.html): facilitation and marking notes.
+- [Source and adaptation notes](SOURCES.md): provenance and scientific clarifications.
+- [Written afternoon worksheet](EXERCISE.md): an optional GitHub-readable companion to the virtual lab.
 
 ## The original 15 conditions
 
@@ -39,7 +51,7 @@ Numbers match the manual. “Heated” refers to **60°C for 5 min before the re
 
 The four TLC standards are glucose, maltose, maltotetraose and maltoheptaose. Detection can be switched between iodine vapour and sugar staining/charring.
 
-## Session · 14:00–15:45
+## Virtual lab timing · 14:00–15:45
 
 | Time | Activity |
 |---|---|
@@ -53,9 +65,9 @@ The four TLC standards are glucose, maltose, maltotetraose and maltoheptaose. De
 
 ## Scientific scope and provenance
 
-The experimental matrix, pretreatment, incubation conditions and TLC standards come from `LabManual_2023-2024_Danish.docx`, Section A and its afternoon continuation. The source manual and lecture slides are not redistributed in this repository. Section B, the Arabidopsis leaf experiment, is not included.
+The experimental matrix, pretreatment, incubation conditions and TLC standards come from `LabManual_2023-2024_Danish.docx`, Section A and its afternoon continuation. The source manual and complete slide decks are not redistributed. Selected theoretical-exercise figures and the two original Danish exam PDFs are included; see SOURCES.md. Section B, the Arabidopsis wet-lab experiment, is not included.
 
-**All analytical outputs are authored, qualitative teaching scenarios, not measured laboratory results.** Colours, migration positions and band darkness are illustrative and must not be used to estimate yields or concentrations. The small molecular sketch and the optional particle sandbox do not generate the analytical dataset.
+**The virtual lab’s analytical outputs are authored, qualitative teaching scenarios, not measured laboratory results.** Colours, migration positions and band darkness are illustrative and must not be used to estimate yields or concentrations. The small molecular sketch and the optional particle sandbox do not generate the analytical dataset.
 
 Heating at 60°C for 5 min is not assumed to completely gelatinize every preparation. The amylose-rich preparation is idealized as unbranched. The exercise contains saliva and isoamylase treatments; β-amylase is present only in the separate optional sandbox.
 
@@ -76,11 +88,14 @@ Push to `main` to run the tests, build the site and deploy through GitHub Action
 
 | File | Purpose |
 |---|---|
-| `index.html` | Student exercise |
-| `workshop.js` | Predictions, result reveal, notebook, TLC and molecular diagrams |
+| `index.html` | Full day workbook and all exercises |
+| `workshop.js` | Saved answers across the day, notebook export, result reveal, TLC and molecular diagrams |
 | `workshop-model.js` | Qualitative scenarios and linkage connectivity |
 | `workshop.css` | Screen and print styles |
-| `EXERCISE.md` | GitHub-readable student worksheet |
+| `EXERCISE.md` | GitHub-readable afternoon lab worksheet |
+| `SOURCES.md` | Source materials and scientific clarifications |
+| `assets/` | Embedded theoretical-exercise figures |
+| `materials/` | Original Danish exam question and answer PDFs |
 | `instructor.html` | Timetable, answer notes and marking guide |
 | `simulation.html` | Optional enzyme particle sandbox |
 | `workshop.test.js` | Sample numbering, specificity, connectivity and scenario checks |

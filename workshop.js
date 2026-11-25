@@ -2,6 +2,8 @@
 const $ = id => document.getElementById(id);
 const M = StarchLab;
 const KEY = 'biokemi2-starch-lab-v2';
+// Keep the storage key so existing lab answers survive the full-day expansion.
+const answerFields = Array.from(document.querySelectorAll('[data-save]'));
 const esc = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const blank = () => ({ selected: 1, plate: 'glycogen', detector: 'char', answers: {}, records: Object.fromEntries(M.samples.map(s => [s.id, { prediction: '', observation: '', revealed: false, source: '' }])) });
 let state = blank(), after = false;
@@ -11,7 +13,7 @@ try {
     if (M.samples.some(s => s.id === saved.selected)) state.selected = saved.selected;
     if (['all', ...M.substrates.map(s => s.id)].includes(saved.plate)) state.plate = saved.plate;
     if (['char', 'iodine'].includes(saved.detector)) state.detector = saved.detector;
-    for (const key of ['group','tlc-answer','iodine-answer','controls','conclusion','transfer']) {
+    for (const key of answerFields.map(field => field.dataset.save)) {
       if (typeof saved.answers?.[key] === 'string') state.answers[key] = saved.answers[key];
     }
     for (const s of M.samples) {
@@ -26,7 +28,7 @@ function save() {
   try { localStorage.setItem(KEY, JSON.stringify(state)); $('save-status').textContent = 'Saved in this browser only. Download your notebook before leaving.'; }
   catch (_) { $('save-status').textContent = 'Browser storage is unavailable. Keep this tab open and download your notebook to retain your answers.'; }
 }
-document.querySelectorAll('[data-save]').forEach(input => {
+answerFields.forEach(input => {
   input.value = state.answers[input.dataset.save] || '';
   input.addEventListener('input', () => { state.answers[input.dataset.save] = input.value; save(); });
 });
@@ -165,10 +167,20 @@ $('reveal-all').addEventListener('click', () => {
   state.plate = 'all'; save(); render();
 });
 function report() {
-  const lines = ['BIOKEMI 2 — VIRTUAL STARCH LAB', 'Section A · 14:00–15:45 · 105 minutes', `Group: ${state.answers.group || '(not entered)'}`, `Exported: ${new Date().toISOString()}`, '',
+  const lines = ['BIOKEMI 2 — STARCH AND GLYCOGEN DAY WORKBOOK', '09:00–17:00 · lectures, theory, brewing, virtual lab and exam-style assignment', `Group / initials: ${state.answers.group || '(not entered)'}`, `Exported: ${new Date().toISOString()}`, ''];
+  function writtenSection(section, title) {
+    lines.push(title, '');
+    answerFields.filter(field => field.dataset.section === section).forEach(field => {
+      lines.push(field.dataset.prompt || field.dataset.save, state.answers[field.dataset.save] || '(not recorded)', '');
+    });
+  }
+  writtenSection('lectures', '09:00–10:45 — LECTURE NOTES');
+  writtenSection('theory', '11:00–12:00 — THEORETICAL EXERCISE');
+  writtenSection('industry', '13:00–13:45 — STARCH AND BREWING');
+  lines.push('14:00–15:45 — VIRTUAL STARCH LAB', '',
     'PROVENANCE: LabManual_2023-2024_Danish.docx, Section A. All displayed results are authored, qualitative teaching scenarios, not experimental measurements. Colours, Rf values and darkness are illustrative; no quantitative yields can be inferred.',
     'PROTOCOL: 60°C for 5 min where heated; 100 µl substrate + 100 µl diluted saliva / isoamylase / Tris; all reactions 37°C for 30 min, then ice.',
-    'TLC standards (illustrative Rf): ' + M.standards.map(s => `${s.name} DP${s.dp} ${s.rf.toFixed(2)}`).join('; '), ''];
+    'TLC standards (illustrative Rf): ' + M.standards.map(s => `${s.name} DP${s.dp} ${s.rf.toFixed(2)}`).join('; '), '');
   for (const s of M.samples) {
     const r = M.result(s.id), record = state.records[s.id];
     lines.push(`SAMPLE ${s.id}: ${r.substrateInfo.name}; ${r.treatmentInfo.name}`, `Prediction: ${record.prediction || '(not recorded)'}`);
@@ -178,21 +190,23 @@ function report() {
   }
   const prompts = { 'tlc-answer': 'TLC assignments and uncertainty', 'iodine-answer': 'Iodine versus sugar staining', controls: 'Controls and heat treatment', conclusion: 'Conclusion', transfer: 'Transfer to brewing / resistant starch' };
   Object.entries(prompts).forEach(([key, title]) => lines.push(title.toUpperCase(), state.answers[key] || '(not recorded)', ''));
+  writtenSection('exam', '16:00–17:00 — EXAM-STYLE ASSIGNMENT');
+  lines.push('Exam context: the source assignment gives β-amylolytic limits of approximately 46% for potato starch and 43% for maize starch. These are supplied question values, not outputs of the virtual lab.', 'Sources: theoretical exercise slides and worksheet; LabManual_2023-2024_Danish.docx Section A; eksamenslignende opgave uge 49.pdf and supplied answer materials. See SOURCES.md in the workbook repository.');
   return lines.join('\n');
 }
 function download() {
   const url = URL.createObjectURL(new Blob([report()], { type: 'text/plain;charset=utf-8' }));
-  const a = document.createElement('a'); a.href = url; a.download = 'biokemi2-starch-notebook.txt'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  const a = document.createElement('a'); a.href = url; a.download = 'biokemi2-day-notebook.txt'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
-['export','export-bottom'].forEach(id => $(id).addEventListener('click', download));
-['print','print-bottom'].forEach(id => $(id).addEventListener('click', () => window.print()));
+document.querySelectorAll('#export, #export-bottom, [data-action="export"]').forEach(button => button.addEventListener('click', download));
+document.querySelectorAll('#print, #print-bottom, [data-action="print"]').forEach(button => button.addEventListener('click', () => window.print()));
 window.addEventListener('beforeprint', () => {
   document.querySelectorAll('.print-answer').forEach(el => el.remove());
-  document.querySelectorAll('textarea').forEach(input => { const text = document.createElement('div'); text.className = 'print-answer'; text.textContent = input.value || 'Answer: __________________________________________________________'; input.after(text); });
+  document.querySelectorAll('textarea, select[data-save]').forEach(input => { const text = document.createElement('div'); text.className = 'print-answer'; text.textContent = input.value || 'Answer: __________________________________________________________'; input.after(text); });
 });
 window.addEventListener('afterprint', () => document.querySelectorAll('.print-answer').forEach(el => el.remove()));
 $('reset').addEventListener('click', () => {
-  if (!window.confirm('Clear this starch lab notebook, including predictions and interpretations? Download your notebook first.')) return;
+  if (!window.confirm('Clear ALL workbook answers, including lecture notes, theory, lab predictions and exam answers? Download your day notebook first.')) return;
   state = blank(); after = false;
   document.querySelectorAll('[data-save]').forEach(input => input.value = '');
   $('run-message').textContent = ''; save(); render();

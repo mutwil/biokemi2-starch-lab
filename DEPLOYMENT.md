@@ -18,9 +18,9 @@ python3 scripts/build.py
 python3 -m http.server 8000 --directory _site
 ```
 
-Open http://localhost:8000/. Verify predictions, sample reveal, both TLC modes, notebook export and printing after changing their code. The site works directly from local files too.
+Open http://localhost:8000/. Verify the schedule links, theory selections, exam answers, reload persistence, sample reveal, both TLC modes, whole-day notebook export and printing after changing their code. The site works directly from local files too.
 
-The build copies an explicit list of public teaching files into `_site/`, validates local links, and generates the offline ZIP. Source manuals, attachments, browser answers, screenshots and other local files are not copied.
+The build copies an explicit list of public teaching files into `_site/`, validates local links, and generates the offline ZIP. The allowlist includes selected source figures and two original Danish exam PDFs. Other source files, browser answers, screenshots and local QA outputs are not copied.
 
 ## Publish
 
