@@ -77,7 +77,7 @@
       <section class="lab">
         <aside class="panel controls">
           <h2>Reaction controls</h2>
-          <div class="control"><div class="control-top"><label for="amylase">α-amylase</label><output id="amylaseVal">8 µM</output></div><input id="amylase" type="range" min="0" max="24" value="8" style="--accent:#47dfd2;--fill:33.3%"><p class="hint">Cleaves internal α(1→4) glycosidic bonds.</p></div>
+          <div class="control"><div class="control-top"><label for="amylase">α-amylase</label><output id="amylaseVal">8 µM</output></div><input id="amylase" type="range" min="0" max="24" value="8" style="--accent:#47dfd2;--fill:33.3%"><p class="hint">Cuts inside an α(1→4) chain. Maltose stays intact.</p></div>
           <div class="control"><div class="control-top"><label for="betaamylase">β-amylase</label><output id="betaamylaseVal">4 µM</output></div><input id="betaamylase" type="range" min="0" max="18" value="4" style="--accent:#ad8bff;--fill:22.2%"><p class="hint">Removes β-maltose from non-reducing ends via α(1→4) cleavage.</p></div>
           <div class="control"><div class="control-top"><label for="debrancher">ISA / PUL debrancher</label><output id="debrancherVal">3 µM</output></div><input id="debrancher" type="range" min="0" max="14" value="3" style="--accent:#ff8787;--fill:21.4%"><p class="hint">Isoamylase or pullulanase hydrolyzes α(1→6) branch junctions.</p></div>
           <div class="control"><div class="control-top"><label for="substrate">Starch load</label><output id="substrateVal">100 %</output></div><input id="substrate" type="range" min="35" max="150" value="100" style="--accent:#ffcb6b;--fill:56.5%"><p class="hint">Changes the size of three illustrated starch fragments and resets the simulation.</p></div>
@@ -88,7 +88,7 @@
         <aside class="panel metrics">
           <h2>Live readout</h2>
           <div class="metric"><span>Illustrated bonds intact</span><strong id="remaining">100%</strong><div class="progress"><b id="bar" style="width:100%"></b></div></div>
-          <div class="metric"><span>Cleaved bonds</span><strong id="cleaved">0</strong><small id="bondTotal">of 60 accessible sites</small></div>
+          <div class="metric"><span>Cleaved bonds</span><strong id="cleaved">0</strong><small id="bondTotal">of 60 original bonds</small></div>
           <div class="metric"><span>Malto-oligosaccharides</span><strong id="dextrins">0</strong><small>from α-amylase</small></div>
           <div class="metric"><span>β-maltose released</span><strong id="glucose">0</strong><small>from β-amylase</small></div>
           <div class="metric"><span>α(1→6) branches removed</span><strong id="debranched">0</strong><small>by ISA / PUL</small></div>
@@ -97,7 +97,7 @@
       </section>
       <section class="story">
         <article class="panel"><span class="key">How to use it</span><h3>More balls, more encounters</h3><p>Raise an enzyme concentration to add more moving particles. Each hexagon is a schematic glucose residue: a bond joins C1 to C4, or C1 to the C6 side group at a branch. The moving network is a simplified fragment, not an atomic structure or a kinetic prediction.</p></article>
-        <article class="panel"><span class="key">Endo-acting</span><h3>α-amylase</h3><p>Cleaves internal α(1→4) linkages in the main chain and branch arms, releasing malto-oligosaccharides. It cannot pass an α(1→6) branch point.</p></article>
+        <article class="panel"><span class="key">Endo-acting</span><h3>α-amylase</h3><p>This model represents the main stage of starch digestion. An α-amylase cut requires an intact α(1→4) bond on each side of the cutting site. This leaves maltose, maltotriose and branched fragments. Slower reactions on maltotriose are outside the model.</p></article>
         <article class="panel"><span class="key">Exo-acting & debranching</span><h3>β-amylase · ISA · PUL</h3><p>β-amylase targets the purple-ringed α(1→4) site adjacent to a non-reducing end, releasing a two-residue β-maltose unit and exposing the next target. ISA and PUL hydrolyze dashed α(1→6) branch junctions.</p></article>
       </section>
     </main>
@@ -215,6 +215,12 @@
         total=bonds.length;refreshTerminals();
       }
       function refreshTerminals(){
+        // Each chain lists its α(1→4) bonds in order. An α(1→6) branch starts a separate chain.
+        for (const chain of chains) {
+          chain.forEach((bond, i) => {
+            bond.alphaTarget = Boolean(bond.alive && chain[i - 1]?.alive && chain[i + 1]?.alive);
+          });
+        }
         if (drag) drag.group = attachedSugars(drag.sugar);
         bonds.forEach(b=>b.betaTarget=false);nodes.forEach(n=>{n.reducing=false;n.nonreducing=false;});
         nodes.filter(n=>!n.released).forEach(n=>{const outgoing=bonds.some(b=>b.alive&&b.parent===n),incoming=bonds.some(b=>b.alive&&b.child===n);n.reducing=!incoming;n.nonreducing=!outgoing;const free=!incoming&&!outgoing;if(free&&!n.free){const angle=rng(0,Math.PI*2),speed=rng(18,30);n.vx=Math.cos(angle)*speed;n.vy=Math.sin(angle)*speed;}n.free=free;});
@@ -225,10 +231,10 @@
       function reset(){finishDrag();cleaved=0;dextrins=0;glucose=0;debranched=0;particles=[];ripples=[];enzymes=[];makeBonds();refill();updateReadout();}
       function addProduct(x,y,isGlucose){particles.push({x,y,vx:rng(-38,38),vy:rng(-38,38),life:1,glucose:isGlucose});}
       function endpoints(b){return {x1:b.parent.x+(b.type==='a14'?sugarRadius:-sugarRadius*.5),y1:b.parent.y+(b.type==='a14'?0:-sugarRadius*1.55),x2:b.child.x-sugarRadius,y2:b.child.y};}
-      function hit(e,b){const compatible=(e.type==='amylase'&&b.type==='a14'&&!b.parent.released&&!b.child.released) || (e.type==='betaamylase'&&b.betaTarget) || (e.type==='debrancher'&&b.type==='a16');if(!b.alive||!compatible)return;const p=endpoints(b),x=(p.x1+p.x2)/2,y=(p.y1+p.y2)/2,dx=e.x-x,dy=e.y-y;if(dx*dx+dy*dy>(e.r+12)**2||Math.random()>.12)return;b.alive=false;cleaved++;if(e.type==='amylase')dextrins++;else if(e.type==='betaamylase'){b.child.released=true;b.maltoseOuter.child.released=true;glucose++;}else debranched++;refreshTerminals();ripples.push({x,y,r:3,life:1,c:colors[e.type]});addProduct(x,y,e.type==='betaamylase');updateReadout();}
+      function hit(e,b){const compatible=(e.type==='amylase'&&b.alphaTarget) || (e.type==='betaamylase'&&b.betaTarget) || (e.type==='debrancher'&&b.type==='a16');if(!b.alive||!compatible)return;const p=endpoints(b),x=(p.x1+p.x2)/2,y=(p.y1+p.y2)/2,dx=e.x-x,dy=e.y-y;if(dx*dx+dy*dy>(e.r+12)**2||Math.random()>.12)return;b.alive=false;cleaved++;if(e.type==='amylase')dextrins++;else if(e.type==='betaamylase'){b.child.released=true;b.maltoseOuter.child.released=true;glucose++;}else debranched++;refreshTerminals();ripples.push({x,y,r:3,life:1,c:colors[e.type]});addProduct(x,y,e.type==='betaamylase');updateReadout();}
       function bounceFromResidues(e){nodes.forEach(n=>{const dx=e.x-n.x,dy=e.y-n.y,dist=Math.hypot(dx,dy)||.001,min=e.r+sugarRadius;if(dist>=min)return;const nx=dx/dist,ny=dy/dist,overlap=min-dist;e.x+=nx*overlap;e.y+=ny*overlap;const toward=e.vx*nx+e.vy*ny;if(toward<0){e.vx-=2*toward*nx;e.vy-=2*toward*ny;n.vx-=nx*4;n.vy-=ny*4;}});}
       function moveNetwork(dt,t){nodes.forEach((n,i)=>{if(n.free){n.vx+=Math.sin(t*.0012+i)*4*dt;n.vy+=Math.cos(t*.001+i)*4*dt;}else{n.vx+=(n.homeX-n.x)*.65*dt+Math.sin(t*.0008+i)*.8*dt;n.vy+=(n.homeY-n.y)*.65*dt+Math.cos(t*.001+i)*.8*dt;}});bonds.filter(b=>b.alive).forEach(b=>{const dx=b.child.x-b.parent.x,dy=b.child.y-b.parent.y,d=Math.hypot(dx,dy)||1,force=(d-b.length)*2*dt,fx=dx/d*force,fy=dy/d*force;b.parent.vx+=fx;b.parent.vy+=fy;b.child.vx-=fx;b.child.vy-=fy;});nodes.forEach(n=>{if(drag?.group.has(n)){n.vx=n.vy=0;return;}n.vx*=n.free?.999:.99;n.vy*=n.free?.999:.99;n.x+=n.vx*dt;n.y+=n.vy*dt;if(n.free){const margin=sugarRadius+4;if(n.x<margin){n.x=margin;n.vx=Math.abs(n.vx);}if(n.x>W-margin){n.x=W-margin;n.vx=-Math.abs(n.vx);}if(n.y<margin){n.y=margin;n.vy=Math.abs(n.vy);}if(n.y>H-margin){n.y=H-margin;n.vy=-Math.abs(n.vy);}}});}
-      function updateReadout(){ const alive=bonds.filter(b=>b.alive).length, percent=Math.max(0,Math.round(alive/Math.max(1,total)*100)); $('#remaining').textContent=percent+'%'; $('#bar').style.width=percent+'%'; $('#cleaved').textContent=cleaved; $('#bondTotal').textContent='of '+total+' accessible sites'; $('#dextrins').textContent=dextrins; $('#glucose').textContent=glucose; $('#debranched').textContent=debranched; }
+      function updateReadout(){ const alive=bonds.filter(b=>b.alive).length, percent=Math.max(0,Math.round(alive/Math.max(1,total)*100)); $('#remaining').textContent=percent+'%'; $('#bar').style.width=percent+'%'; $('#cleaved').textContent=cleaved; $('#bondTotal').textContent='of '+total+' original bonds'; $('#dextrins').textContent=dextrins; $('#glucose').textContent=glucose; $('#debranched').textContent=debranched; }
       function draw(t){ ctx.clearRect(0,0,W,H); const cx=W/2,cy=H/2; const g=ctx.createRadialGradient(cx,cy,0,cx,cy,260);g.addColorStop(0,'#1d5d6538');g.addColorStop(1,'#071b2500');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
         bonds.forEach(b=>{if(!b.alive)return;const branch=b.type==='a16',p=endpoints(b),x=(p.x1+p.x2)/2,y=(p.y1+p.y2)/2;ctx.setLineDash(branch?[5,4]:[]);ctx.strokeStyle=branch?'#ff8787':'#ffcb6b';ctx.lineWidth=branch?2.5:2;ctx.beginPath();ctx.moveTo(p.x1,p.y1);ctx.lineTo(p.x2,p.y2);ctx.stroke();ctx.setLineDash([]);if(branch){ctx.fillStyle='#ffd9d9';ctx.font='700 10px sans-serif';ctx.textAlign='center';ctx.fillText('α1→6',x,y-6);}if(b.betaTarget){ctx.strokeStyle='#ad8bff';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x,y,8,0,Math.PI*2);ctx.stroke();}});
         nodes.forEach(n=>{ctx.fillStyle=n.released?'#a3aaa0':'#fff0c9';ctx.strokeStyle='#ffcb6b';ctx.lineWidth=1.2;ctx.beginPath();for(let i=0;i<6;i++){const a=i*Math.PI/3,x=n.x+Math.cos(a)*sugarRadius,y=n.y+Math.sin(a)*sugarRadius;i?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle='#68431c';ctx.font='700 8px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('Glc',n.x,n.y);ctx.fillStyle='#c6dcdf';ctx.font='8px sans-serif';ctx.fillText('1',n.x-sugarRadius-4,n.y+2);ctx.fillText('4',n.x+sugarRadius+4,n.y+2);ctx.strokeStyle='#ffcb6b';ctx.beginPath();ctx.moveTo(n.x-6,n.y-10);ctx.lineTo(n.x-6,n.y-18);ctx.stroke();ctx.fillStyle='#c6dcdf';ctx.fillText('6',n.x-6,n.y-22);});
